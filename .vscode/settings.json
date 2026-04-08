@@ -1,0 +1,46 @@
+{
+    // ─── Editor General ───────────────────────────────────────
+    "editor.formatOnSave": true,
+    "editor.rulers": [80],
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "explicit",        // Auto-fix lint issues on save
+      "source.organizeImports": "explicit" // Auto-sort & remove unused imports
+    },
+  
+    // ─── Dart/Flutter Specific ────────────────────────────────
+    "[dart]": {
+      "editor.defaultFormatter": "Dart-Code.dart-code",
+      "editor.formatOnSave": true,
+      "editor.selectionHighlight": false,
+      "editor.suggest.snippetsPreventQuickSuggestions": false,
+      "editor.suggestSelection": "first",
+      "editor.tabCompletion": "onlySnippets",
+      "editor.wordBasedSuggestions": "off"
+    },
+  
+    // ─── Dart Extension ───────────────────────────────────────
+    "dart.previewFlutterUiGuides": true,  // Shows widget tree guides in gutter
+    "dart.closingLabels": true,           // Shows closing labels e.g. // Row
+    "dart.showTodos": true,               // Highlights TODO comments
+    "dart.lineLength": 80,                // Matches the ruler above
+    "dart.enableSdkFormatter": true,      // Use official Dart formatter
+  
+    // ─── Performance Boosters ─────────────────────────────────
+    "editor.quickSuggestionsDelay": 0,   // Instant autocomplete
+    "editor.snippetSuggestions": "top",  // Snippets appear first
+    "files.watcherExclude": {
+      "**/.dart_tool/**": true,
+      "**/.flutter-plugins/**": true,
+      "**/build/**": true,
+      "**/.pub-cache/**": true
+    },
+    "search.exclude": {
+      "**/.dart_tool": true,
+      "**/build": true,
+      "**/.pub-cache": true
+    },
+    "files.exclude": {
+      "**/.dart_tool": true,
+      "**/build": true
+    }
+  }
