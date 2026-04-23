@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:erb/core/network/api_error_handler.dart';
 import 'package:erb/features/home/data/apis/offers_api.dart';
 import 'package:erb/features/home/data/models/offer_model.dart';
 
@@ -9,12 +10,8 @@ class OffersRepo {
     try {
       final response = await _api.getActiveOffers();
 
-      print('Offers API Response: ${response.data}');
-      print('Response type: ${response.data.runtimeType}');
-
       List<dynamic> offersData = [];
 
-      // API returns a direct list
       if (response.data is List) {
         offersData = response.data;
       } else if (response.data['data'] != null &&
@@ -25,10 +22,7 @@ class OffersRepo {
         offersData = response.data['offers'];
       }
 
-      print('Offers count: ${offersData.length}');
-
       if (offersData.isEmpty) {
-        print('No offers found, using default');
         return _getDefaultOffers();
       }
 
@@ -37,27 +31,24 @@ class OffersRepo {
             try {
               return OfferModel.fromJson(json);
             } catch (e) {
-              print('Error parsing offer: $e');
-              print('JSON data: $json');
               return null;
             }
           })
           .whereType<OfferModel>()
           .toList();
 
-      print('Parsed ${offers.length} offers');
       return offers.isNotEmpty ? offers : _getDefaultOffers();
     } on DioException catch (e) {
-      print('Dio error: ${e.message}');
-      print('Dio error type: ${e.type}');
+      // Log formatted error using ApiErrorHandler
+      final errorMessage = ApiErrorHandler.handle(e);
+      print('Offers API error: $errorMessage');
       return _getDefaultOffers();
     } catch (e) {
-      print('Unexpected error: $e');
+      print('Unexpected error in offers: $e');
       return _getDefaultOffers();
     }
   }
 
-  // Fallback default offers if API fails
   List<OfferModel> _getDefaultOffers() {
     final now = DateTime.now();
     return [

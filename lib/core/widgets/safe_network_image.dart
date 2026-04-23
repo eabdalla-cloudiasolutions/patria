@@ -14,7 +14,7 @@ class SafeNetworkImage extends StatelessWidget {
     this.width = double.infinity,
     this.height = double.infinity,
     this.fit = BoxFit.cover,
-    this.fallbackAsset = 'assets/images/placeholder.png',
+    this.fallbackAsset = 'assets/images/erbLogo.png',
   });
 
   @override

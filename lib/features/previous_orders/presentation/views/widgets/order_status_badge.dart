@@ -1,13 +1,30 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class OrderStatusBadge extends StatelessWidget {
-  final String status; // 'active' | 'delivered' | 'cancelled'
+  final String status;
 
   const OrderStatusBadge({super.key, required this.status});
 
+  // 👇 Normalize status to display category
+  String get _normalizedStatus {
+    final s = status.toLowerCase();
+    if (s == 'active' ||
+        s == 'pending' ||
+        s == 'confirmed' ||
+        s == 'preparing' ||
+        s == 'out for delivery' ||
+        s == 'on the way') {
+      return 'active';
+    }
+    if (s == 'delivered') return 'delivered';
+    if (s == 'cancelled') return 'cancelled';
+    return s;
+  }
+
   Color get _color {
-    switch (status) {
+    switch (_normalizedStatus) {
       case 'active':
         return const Color(0xFF6B5E4B);
       case 'delivered':
@@ -20,13 +37,13 @@ class OrderStatusBadge extends StatelessWidget {
   }
 
   String get _label {
-    switch (status) {
+    switch (_normalizedStatus) {
       case 'active':
-        return 'Active';
+        return 'status_active'.tr();
       case 'delivered':
-        return 'Delivered';
+        return 'status_delivered'.tr();
       case 'cancelled':
-        return 'Cancelled';
+        return 'status_cancelled'.tr();
       default:
         return status;
     }

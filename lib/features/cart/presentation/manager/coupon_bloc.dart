@@ -1,5 +1,7 @@
 // lib/features/cart/presentation/bloc/coupon_bloc.dart
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart';
+import 'package:erb/core/network/api_error_handler.dart';
 import 'package:erb/features/cart/data/repos/coupon_repository.dart';
 import 'package:erb/features/cart/presentation/manager/coupon_event.dart';
 import 'package:erb/features/cart/presentation/manager/coupon_state.dart';
@@ -20,15 +22,18 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
       if (response.valid) {
         emit(CouponApplied(response));
       } else {
+        // Invalid coupon from API (valid=false with message)
         emit(CouponError(response.message ?? 'Invalid coupon'));
       }
     } catch (e) {
-      emit(CouponError(e.toString()));
+      // DioException or other errors
+      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      emit(CouponError(errorMessage));
     }
   }
 
   void _onRemoveCoupon(RemoveCoupon event, Emitter<CouponState> emit) {
     emit(CouponRemoved());
-    emit(CouponInitial()); // optional: clear state after removal
+    emit(CouponInitial());
   }
 }

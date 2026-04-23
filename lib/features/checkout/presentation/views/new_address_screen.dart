@@ -1,5 +1,5 @@
-import 'package:erb/features/checkout/presentation/views/widgets/address_form_sheet.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:erb/features/checkout/presentation/views/widgets/address_form_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -86,8 +86,10 @@ class _NewAddressScreenState extends State<NewAddressScreen> {
       useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (_) => AddressFormSheet(
-        area: _currentArea,
-        onSave: (String addressData) {
+        onSave: (String addressData, String zoneId) {
+          // added zoneId
+          print('✅ Zone ID received: $zoneId');
+
           Navigator.pop(context);
           Navigator.pop(context, addressData);
         },
@@ -267,8 +269,9 @@ class _NewAddressScreenState extends State<NewAddressScreen> {
                 GestureDetector(
                   onTap: () {
                     setState(() => _autoLocate = !_autoLocate);
-                    if (_autoLocate)
+                    if (_autoLocate) {
                       _initUserLocation(); // ✅ re-locate when enabled
+                    }
                   },
                   child: Row(
                     children: [

@@ -8,7 +8,6 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
 
   ProductsBloc(this._productsRepo) : super(ProductsInitial()) {
     on<LoadProducts>(_onLoadProducts);
-    // ❌ Remove on<LoadCategories>
   }
 
   Future<void> _onLoadProducts(
@@ -24,7 +23,10 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
         selectedCategory: event.category ?? 'All',
       ));
     } catch (e) {
-      emit(ProductsError(e.toString()));
+      // The repo already throws a formatted String (from ApiErrorHandler)
+      // So we can use it directly
+      final errorMessage = e is String ? e : e.toString();
+      emit(ProductsError(errorMessage));
     }
   }
 }

@@ -6,11 +6,19 @@ class CheckoutOrderSummary extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;
   final double deliveryFee;
   final double serviceFee;
+  final double couponDiscount;
+  final double pointsDiscount;
+  final double? totalOverride;
+  final int rewardPoints;
 
   const CheckoutOrderSummary({
     super.key,
     this.deliveryFee = 25.0,
     this.serviceFee = 32.0,
+    this.couponDiscount = 0,
+    this.pointsDiscount = 0,
+    this.totalOverride,
+    this.rewardPoints = 0,
     required this.cartItems,
   });
 
@@ -19,12 +27,12 @@ class CheckoutOrderSummary extends StatelessWidget {
         (sum, item) => sum + (item['price'] * item['quantity']),
       );
 
-  double get total => subtotal + deliveryFee + serviceFee;
-
-  int get rewardPoints => (total / 10).floor();
+  double get total =>
+      totalOverride ??
+      (subtotal - couponDiscount - pointsDiscount + deliveryFee + serviceFee);
 
   Widget _buildRow(BuildContext context, String label, double amount,
-      {bool isBold = false}) {
+      {bool isBold = false, bool isDiscount = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -40,10 +48,22 @@ class CheckoutOrderSummary extends StatelessWidget {
         ),
         Text.rich(
           TextSpan(children: [
+            if (isDiscount)
+              TextSpan(
+                text: '- ',
+                style: TextStyle(
+                  color: const Color(0xFF059B5A),
+                  fontSize: 13.sp,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             TextSpan(
               text: 'currency'.tr(),
               style: TextStyle(
-                color: Color(0xFF515151),
+                color: isDiscount
+                    ? const Color(0xFF059B5A)
+                    : const Color(0xFF515151),
                 fontSize: 13.sp,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w400,
@@ -53,7 +73,9 @@ class CheckoutOrderSummary extends StatelessWidget {
             TextSpan(
               text: amount.toStringAsFixed(2),
               style: TextStyle(
-                color: Color(0xFF515151),
+                color: isDiscount
+                    ? const Color(0xFF059B5A)
+                    : const Color(0xFF515151),
                 fontSize: 13.sp,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w600,
@@ -103,7 +125,7 @@ class CheckoutOrderSummary extends StatelessWidget {
                             item['name'],
                           ]),
                           style: TextStyle(
-                            color: Color(0xFF515151),
+                            color: const Color(0xFF515151),
                             fontSize: 14.sp,
                             fontFamily: 'Montserrat',
                             fontWeight: FontWeight.w500,
@@ -115,7 +137,7 @@ class CheckoutOrderSummary extends StatelessWidget {
                             TextSpan(
                               text: 'currency'.tr(),
                               style: TextStyle(
-                                color: Color(0xFF515151),
+                                color: const Color(0xFF515151),
                                 fontSize: 13.sp,
                                 fontFamily: 'Montserrat',
                                 fontWeight: FontWeight.w400,
@@ -125,7 +147,7 @@ class CheckoutOrderSummary extends StatelessWidget {
                               text: (item['price'] * item['quantity'])
                                   .toStringAsFixed(2),
                               style: TextStyle(
-                                color: Color(0xFF515151),
+                                color: const Color(0xFF515151),
                                 fontSize: 13.sp,
                                 fontFamily: 'Montserrat',
                                 fontWeight: FontWeight.w600,
@@ -137,17 +159,32 @@ class CheckoutOrderSummary extends StatelessWidget {
                     ),
                   )),
 
-              Divider(color: Color(0xFFCACBD4), height: 24.h),
+              Divider(color: const Color(0xFFCACBD4), height: 24.h),
               _buildRow(context, 'subtotal'.tr(), subtotal),
               SizedBox(height: 10.h),
               _buildRow(context, 'delivery_fee'.tr(), deliveryFee),
               SizedBox(height: 10.h),
               _buildRow(context, 'service_fee'.tr(), serviceFee),
-              Divider(color: Color(0xFFCACBD4), height: 24.h),
+
+              // ✅ Show coupon discount if applied
+              if (couponDiscount > 0) ...[
+                SizedBox(height: 10.h),
+                _buildRow(context, 'coupon_discount'.tr(), couponDiscount,
+                    isDiscount: true),
+              ],
+
+              // ✅ Show points discount if applied
+              if (pointsDiscount > 0) ...[
+                SizedBox(height: 10.h),
+                _buildRow(context, 'points_discount'.tr(), pointsDiscount,
+                    isDiscount: true),
+              ],
+
+              Divider(color: const Color(0xFFCACBD4), height: 24.h),
               _buildRow(context, 'total'.tr(), total, isBold: true),
               SizedBox(height: 16.h),
 
-              // Reward points banner
+              // ✅ Reward points banner from API
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
@@ -166,7 +203,7 @@ class CheckoutOrderSummary extends StatelessWidget {
                     Text(
                       'earn_reward_points'.tr(args: [rewardPoints.toString()]),
                       style: TextStyle(
-                        color: Color(0xFF28293D),
+                        color: const Color(0xFF28293D),
                         fontSize: 12.sp,
                         fontFamily: 'Montserrat',
                         fontWeight: FontWeight.w500,

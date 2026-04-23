@@ -35,18 +35,16 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
   }
 
   Future<void> _handleLoginSuccess() async {
-    // 1. Request permissions (iOS & Android 13+)
     NotificationSettings settings =
         await FirebaseMessaging.instance.requestPermission();
     if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      print('Notifications not authorized');
       return;
     }
-
-    // 2. Get FCM token
     String? token = await FirebaseMessaging.instance.getToken();
+    print("FCCCM$token");
+
     if (token != null) {
-      // 3. Send to backend
+      print(token);
       await NotificationService().registerToken(token);
     }
   }
@@ -64,7 +62,7 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 32.h),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
-              color: Color(0xFFFAFAF7),
+              color: const Color(0xFFFAFAF7),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30.r),
@@ -78,7 +76,6 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
                   Text(
                     'welcome_back'.tr(),
                     style: TextStyle(
@@ -90,14 +87,11 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                       letterSpacing: 0.40,
                     ),
                   ),
-
                   SizedBox(height: 6.h),
-
-                  // Subtitle
                   Text(
                     'sign_in_subtitle'.tr(),
                     style: TextStyle(
-                      color: Color(0xFF515151),
+                      color: const Color(0xFF515151),
                       fontSize: 16.sp,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w400,
@@ -105,10 +99,7 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                       letterSpacing: 0.32,
                     ),
                   ),
-
                   SizedBox(height: 24.h),
-
-                  // Email
                   CustomTextField(
                     controller: _emailController,
                     label: 'email'.tr(),
@@ -123,10 +114,7 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 16.h),
-
-                  // Password
                   CustomTextField(
                     controller: _passwordController,
                     label: 'password'.tr(),
@@ -141,8 +129,6 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                       size: 24,
                     ),
                   ),
-
-                  // Forgot Password
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -159,7 +145,7 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                       child: Text(
                         'forgot_password'.tr(),
                         style: TextStyle(
-                          color: Color(0xFF6B5E4B),
+                          color: const Color(0xFF6B5E4B),
                           fontSize: 12.sp,
                           fontFamily: 'Montserrat',
                           fontWeight: FontWeight.w600,
@@ -168,76 +154,95 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 32.h),
-
-                  // Sign In button with BlocConsumer
                   BlocConsumer<LoginBloc, LoginState>(
                     listener: (context, state) {
                       if (state is LoginSuccess) {
-                        // ✅ Register FCM token BEFORE or AFTER navigation
                         _handleLoginSuccess();
-
-                        // Navigate to home screen on success
                         Navigator.pushNamedAndRemoveUntil(
                           context,
                           Routes.baseLayer,
                           (route) => false,
                         );
                       }
-                      if (state is LoginFailure) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(state.error),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
                     },
                     builder: (context, state) {
-                      return ElevatedButton(
-                        onPressed: state is LoginLoading
-                            ? null
-                            : () {
-                                context.read<LoginBloc>().add(
-                                      LoginSubmitted(
-                                        email: _emailController.text.trim(),
-                                        password:
-                                            _passwordController.text.trim(),
-                                      ),
-                                    );
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6B5E4B),
-                          minimumSize: Size(double.infinity, 56.h),
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30.w, vertical: 16.h),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                        ),
-                        child: state is LoginLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                            : Text(
-                                'sign_in'.tr(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16.sp,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.w600,
-                                  height: 1.50,
-                                ),
+                      String? errorMessage;
+                      if (state is LoginFailure) {
+                        errorMessage = state.error;
+                      }
+                      return Column(
+                        children: [
+                          if (errorMessage != null)
+                            Container(
+                              margin: EdgeInsets.only(bottom: 16.h),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 12.h, horizontal: 16.w),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade50,
+                                borderRadius: BorderRadius.circular(8.r),
+                                border: Border.all(color: Colors.red.shade200),
                               ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.error_outline,
+                                      color: Colors.red.shade700, size: 20.sp),
+                                  SizedBox(width: 8.w),
+                                  Expanded(
+                                    child: Text(
+                                      errorMessage,
+                                      style: TextStyle(
+                                        color: Colors.red.shade700,
+                                        fontSize: 14.sp,
+                                        fontFamily: 'Montserrat',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ElevatedButton(
+                            onPressed: state is LoginLoading
+                                ? null
+                                : () {
+                                    context.read<LoginBloc>().add(
+                                          LoginSubmitted(
+                                            email: _emailController.text.trim(),
+                                            password:
+                                                _passwordController.text.trim(),
+                                          ),
+                                        );
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6B5E4B),
+                              minimumSize: Size(double.infinity, 56.h),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 30.w, vertical: 16.h),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.r),
+                              ),
+                            ),
+                            child: state is LoginLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
+                                : Text(
+                                    'sign_in'.tr(),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16.sp,
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.50,
+                                    ),
+                                  ),
+                          ),
+                        ],
                       );
                     },
                   ),
-
                   SizedBox(height: 12.h),
-
-                  // Don't have an account
                   Center(
                     child: Text.rich(
                       TextSpan(
@@ -245,7 +250,7 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                           TextSpan(
                             text: 'no_account'.tr(),
                             style: TextStyle(
-                              color: Color(0xFF6B5E4B),
+                              color: const Color(0xFF6B5E4B),
                               fontSize: 16.sp,
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.w400,
@@ -267,7 +272,7 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                                 );
                               },
                             style: TextStyle(
-                              color: Color(0xFF6B5E4B),
+                              color: const Color(0xFF6B5E4B),
                               fontSize: 16.sp,
                               fontFamily: 'Montserrat',
                               fontWeight: FontWeight.w600,
@@ -279,7 +284,6 @@ class _SignInBottomSheetState extends State<SignInBottomSheet> {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 8.h),
                 ],
               ),

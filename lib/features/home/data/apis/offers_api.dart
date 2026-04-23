@@ -6,11 +6,7 @@ class OffersApi {
   final Dio _dio = ApiClient.instance;
 
   Future<Response> getActiveOffers() async {
-    try {
-      final response = await _dio.get(ApiEndpoints.activeOffers);
-      return response;
-    } catch (e) {
-      rethrow;
-    }
+    final response = await _dio.get(ApiEndpoints.activeOffers);
+    return response;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:erb/core/network/api_endpoints.dart';
+import 'package:erb/core/network/interceptors/error_interceptor.dart';
 import 'package:erb/core/services/user_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -23,6 +24,7 @@ class ApiClient {
         compact: false,
       ),
     )
+
     // ✅ Add once here — applies to ALL requests automatically
     ..interceptors.add(
       InterceptorsWrapper(
@@ -34,5 +36,6 @@ class ApiClient {
           handler.next(options);
         },
       ),
-    );
+    )
+    ..interceptors.add(ErrorInterceptor()); // ✅ ADD THIS LINE
 }

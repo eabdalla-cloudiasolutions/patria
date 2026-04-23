@@ -18,45 +18,66 @@ class OrderCardActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (status == 'active') {
-      return _buildPrimaryButton(
-        label: 'track_order'.tr(),
-        onTap: onTrackOrder,
-      );
-    }
+    final lowerStatus = status.toLowerCase();
 
-    if (status == 'cancelled') {
+    // Cancelled: only View Details
+    if (lowerStatus == 'cancelled') {
       return _buildOutlinedButton(
         label: 'view_details'.tr(),
         onTap: onViewDetails,
+        fullWidth: true,
+        withIcon: true,
       );
     }
 
-    // delivered
-    return Row(
-      children: [
-        Expanded(
-          child: _buildOutlinedButton(
-            label: 'view_details'.tr(),
-            onTap: onViewDetails,
+    if (lowerStatus == 'active' ||
+        lowerStatus == 'pending' ||
+        lowerStatus == 'confirmed' ||
+        lowerStatus == 'preparing' ||
+        lowerStatus == 'out for delivery' ||
+        lowerStatus == 'on the way') {
+      return _buildPrimaryButton(
+        label: 'track_order'.tr(),
+        onTap: onTrackOrder,
+        fullWidth: true,
+      );
+    }
+    // Delivered: View Details + Reorder
+    if (lowerStatus == 'delivered') {
+      return Row(
+        children: [
+          Expanded(
+            child: _buildOutlinedButton(
+              label: 'view_details'.tr(),
+              onTap: onViewDetails,
+              withIcon: true,
+            ),
           ),
-        ),
-        SizedBox(width: 12.w),
-        Expanded(
-          child: _buildPrimaryButton(
-            label: 'reorder'.tr(),
-            onTap: onReorder,
-          ),
-        ),
-      ],
-    );
+          if (onReorder != null) ...[
+            SizedBox(width: 12.w),
+            Expanded(
+              child: _buildPrimaryButton(
+                label: 'reorder'.tr(),
+                onTap: onReorder,
+                withIcon: true, // 👈 adds refresh icon before text
+              ),
+            ),
+          ],
+        ],
+      );
+    }
+
+    // Fallback
+    return const SizedBox.shrink();
   }
 
   Widget _buildPrimaryButton({
     required String label,
     VoidCallback? onTap,
+    bool fullWidth = false,
+    bool withIcon = false,
   }) {
-    return GestureDetector(
+    final button = GestureDetector(
       onTap: onTap,
       child: Container(
         height: 40.h,
@@ -67,44 +88,98 @@ class OrderCardActions extends StatelessWidget {
           ),
         ),
         alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 12.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        child: withIcon
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.refresh, // reorder icon
+                    size: 16.sp,
+                    color: Colors.white,
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12.sp,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
+
+    if (fullWidth) {
+      return SizedBox(width: double.infinity, child: button);
+    }
+    return button;
   }
 
   Widget _buildOutlinedButton({
     required String label,
     VoidCallback? onTap,
+    bool fullWidth = false,
+    bool withIcon = false,
   }) {
-    return GestureDetector(
+    final button = GestureDetector(
       onTap: onTap,
       child: Container(
         height: 40.h,
         decoration: ShapeDecoration(
           shape: RoundedRectangleBorder(
-            side: BorderSide(width: 1.w, color: Color(0xFF6B5E4B)),
+            side: BorderSide(width: 1.w, color: const Color(0xFF6B5E4B)),
             borderRadius: BorderRadius.circular(5.r),
           ),
         ),
         alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: Color(0xFF6B5E4B),
-            fontSize: 12.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        child: withIcon
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.visibility_outlined,
+                    size: 16.sp,
+                    color: const Color(0xFF6B5E4B),
+                  ),
+                  SizedBox(width: 6.w),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: const Color(0xFF6B5E4B),
+                      fontSize: 12.sp,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                label,
+                style: TextStyle(
+                  color: const Color(0xFF6B5E4B),
+                  fontSize: 12.sp,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
       ),
     );
+
+    if (fullWidth) {
+      return SizedBox(width: double.infinity, child: button);
+    }
+    return button;
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ProductBottomBar extends StatefulWidget {
   final double price;
-  final VoidCallback onAddToCart;
+  final Function(int quantity) onAddToCart; // now receives quantity
 
   const ProductBottomBar({
     super.key,
@@ -92,13 +92,11 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
               ],
             ),
           ),
-
           SizedBox(width: 12.w),
-
           // Add to cart button
           Expanded(
             child: GestureDetector(
-              onTap: widget.onAddToCart,
+              onTap: () => widget.onAddToCart(_quantity), // pass quantity
               child: Container(
                 height: 56.h,
                 padding: const EdgeInsets.all(12),

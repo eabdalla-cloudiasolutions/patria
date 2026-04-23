@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SpecialRequestBottomSheet extends StatefulWidget {
+  final String? initialText;
   final Function(String) onContinue;
 
   const SpecialRequestBottomSheet({
     super.key,
+    this.initialText,
     required this.onContinue,
   });
 
@@ -16,7 +18,13 @@ class SpecialRequestBottomSheet extends StatefulWidget {
 }
 
 class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
-  final _controller = TextEditingController();
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialText ?? '');
+  }
 
   @override
   void dispose() {
@@ -45,15 +53,15 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
           ),
           shadows: [
             BoxShadow(
-              color: Color(0x19000000),
+              color: const Color(0x19000000),
               blurRadius: 15,
-              offset: Offset(0, 10),
+              offset: const Offset(0, 10),
               spreadRadius: -3,
             ),
             BoxShadow(
-              color: Color(0x19000000),
+              color: const Color(0x19000000),
               blurRadius: 6,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
               spreadRadius: -4,
             ),
           ],
@@ -69,7 +77,7 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
                 Text(
                   'special_request_title'.tr(),
                   style: TextStyle(
-                    color: Color(0xFF333333),
+                    color: const Color(0xFF333333),
                     fontSize: 18.sp,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w600,
@@ -92,9 +100,9 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
             // Text field
             TextField(
               controller: _controller,
-              // maxLines: 3,
+              maxLines: 3,
               style: TextStyle(
-                color: Color(0xFF333333),
+                color: const Color(0xFF333333),
                 fontSize: 16.sp,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w400,
@@ -102,7 +110,7 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
               decoration: InputDecoration(
                 hintText: 'special_request_hint'.tr(),
                 hintStyle: TextStyle(
-                  color: Color(0xFF8B8B8B),
+                  color: const Color(0xFF8B8B8B),
                   fontSize: 16.sp,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w400,
@@ -113,14 +121,14 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide(
                     width: 1.w,
-                    color: Color(0xFFCACBD4),
+                    color: const Color(0xFFCACBD4),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide(
                     width: 1.w,
-                    color: Color(0xFF6B5E4B),
+                    color: const Color(0xFF6B5E4B),
                   ),
                 ),
                 filled: true,
@@ -137,7 +145,6 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
               child: ElevatedButton(
                 onPressed: () {
                   widget.onContinue(_controller.text);
-                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6B5E4B),

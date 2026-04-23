@@ -15,7 +15,9 @@ class ProductCubit extends Cubit<ProductState> {
       final products = await _repo.getProducts();
       emit(ProductLoaded(products));
     } catch (e) {
-      emit(ProductError(e.toString()));
+      // The repo throws a formatted String (from ApiErrorHandler)
+      final errorMessage = e is String ? e : e.toString();
+      emit(ProductError(errorMessage));
     }
   }
 }

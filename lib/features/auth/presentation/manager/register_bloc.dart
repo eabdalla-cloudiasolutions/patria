@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:erb/core/network/api_error_handler.dart';
 import 'package:erb/features/auth/data/models/register_request_model.dart';
 import 'package:erb/features/auth/data/repos/auth_repo.dart';
 import 'package:erb/features/auth/presentation/manager/register_event.dart';
@@ -26,7 +28,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       ));
       emit(RegisterSuccess());
     } catch (e) {
-      emit(RegisterFailure(e.toString()));
+      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      emit(RegisterFailure(errorMessage));
     }
   }
 }

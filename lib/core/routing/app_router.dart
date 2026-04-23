@@ -40,6 +40,9 @@ class AppRouter {
           builder: (_) => CheckoutScreen(
             cartItems: args['cartItems'],
             subtotal: args['subtotal'],
+            discount: args['discount'] ?? 0,
+            voucherCode: args['voucherCode'],
+            specialRequests: args['specialRequests'], // 👈 add this
           ),
         );
       case Routes.personalInformation:
@@ -59,28 +62,25 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => OrderSummaryScreen(
-            orderNumber: args['orderNumber'] as String,
-            cartItems: (args['cartItems'] as List<dynamic>)
-                .map((e) => Map<String, dynamic>.from(e as Map))
-                .toList(), // ← explicit cast
-            subtotal: (args['subtotal'] as num).toDouble(),
-            deliveryFee: (args['deliveryFee'] as num).toDouble(),
-            serviceFee: (args['serviceFee'] as num).toDouble(),
-            deliveryAddress: args['deliveryAddress'] as String,
-            paymentMethod: args['paymentMethod'] as String,
-            pointsEarned: args['pointsEarned'] as int,
+            orderNumber: args['orderNumber'],
+            orderId: args['orderId'] ?? '', // 👈 add this
+            cartItems: args['cartItems'],
+            subtotal: args['subtotal'],
+            deliveryFee: args['deliveryFee'],
+            serviceFee: args['serviceFee'],
+            deliveryAddress: args['deliveryAddress'],
+            paymentMethod: args['paymentMethod'],
+            pointsEarned: args['pointsEarned'],
           ),
         );
-
       case Routes.trackOrder:
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => TrackOrderScreen(
-            orderNumber: args['orderNumber'] as String,
-            estimatedArrival: args['estimatedArrival'] as String,
-            minsAway: args['minsAway'] as int,
-            riderName: args['riderName'] as String,
-            currentStep: args['currentStep'] as int,
+            orderNumber: args['orderNumber'],
+            orderId: args['orderId'], // 👈 add this
+            estimatedArrival: args['estimatedArrival'] ?? '02:45 PM - 1:10 PM',
+            currentStep: args['currentStep'] ?? 0,
           ),
         );
       case Routes.editAddress:
@@ -95,10 +95,10 @@ class AppRouter {
       //   );
       case Routes.previousOrders:
         final args = settings.arguments as Map<String, dynamic>;
-
         return MaterialPageRoute(
           builder: (_) => PreviousOrdersScreen(
             controller: args['controller'],
+            myTabIndex: args['myTabIndex'] ?? 0,
           ),
         );
       case Routes.itemPreview:
@@ -111,23 +111,18 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => NewAddressScreen());
 
       case Routes.cartScreen:
-        // Safely extract arguments with null check
         final args = settings.arguments as Map<String, dynamic>?;
-
-        // Get initialCartItems with safe handling
-        final initialCartItems =
-            args?['initialCartItems'] as List<Map<String, dynamic>>?;
-
-        // Create a default controller or get it from somewhere
-        // You might want to get this from a provider or pass it from the main screen
-        final controller = PersistentTabController(initialIndex: 2);
+        final controller = args?['controller'] as PersistentTabController?;
+        final fromNav = args?['fromNav'] as bool? ?? false;
+        final myTabIndex = args?['myTabIndex'] as int? ?? 2;
 
         return MaterialPageRoute(
           builder: (_) => CartScreen(
-            controller: controller, // You need to provide this
-            initialCartItems: initialCartItems ?? [],
+            controller: controller,
+            fromNav: fromNav,
+            myTabIndex: myTabIndex,
           ),
-          settings: settings, // Preserve settings
+          settings: settings,
         );
       case Routes.favourites:
         return MaterialPageRoute(

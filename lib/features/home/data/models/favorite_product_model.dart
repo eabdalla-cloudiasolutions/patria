@@ -19,13 +19,13 @@ class FavoriteProductModel {
 
   factory FavoriteProductModel.fromJson(Map<String, dynamic> json) {
     return FavoriteProductModel(
-      id: json['id']?.toString() ?? '',
+      id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       name: json['name'] ?? '',
       price: json['price']?.toString() ?? '0',
-      rate: json['rate']?.toString() ?? '0',
-      reviews: json['reviews']?.toString() ?? '0',
+      rate: (json['rate'] ?? 0).toString(),
+      reviews: (json['reviewsCount'] ?? json['reviews'] ?? 0).toString(),
       image: json['image'] ?? '',
-      isFavorite: json['isFavorite'] ?? true,
+      isFavorite: true,
     );
   }
 

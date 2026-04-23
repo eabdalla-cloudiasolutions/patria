@@ -1,5 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:erb/core/routing/routes.dart';
+import 'package:erb/core/widgets/safe_network_image.dart';
+import 'package:erb/features/cart/presentation/manager/cart_bloc.dart';
+import 'package:erb/features/cart/presentation/manager/cart_event.dart';
+import 'package:erb/features/home/data/models/product_model.dart';
 import 'package:erb/features/home/data/repos/favorites_repo.dart';
 import 'package:erb/features/home/data/repos/products_repo.dart';
 import 'package:erb/features/home/presentation/manager/categories_bloc.dart';
@@ -30,12 +34,12 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   String _selectedFilter = 'All';
+  final Set<String> _addingToCartIds = {};
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // ✅ ProductsBloc at top level so both categories and grid share it
         BlocProvider(
           create: (_) => ProductsBloc(ProductsRepo())..add(LoadProducts()),
         ),
@@ -142,44 +146,43 @@ class _HomeState extends State<Home> {
                   return GestureDetector(
                     onTap: () {
                       setState(() => _selectedFilter = category.id);
-                      print(
-                          '🔍 Selected category name: ${category.name}'); // ✅ add this
                       context.read<ProductsBloc>().add(
                             LoadProducts(category: category.name),
                           );
                     },
-                    child: Container(
-                      width: 100.w,
-                      height: 100.h,
-                      padding: const EdgeInsets.all(6.67),
-                      decoration: ShapeDecoration(
-                        image: DecorationImage(
-                          image: category.image != null
-                              ? NetworkImage(category.image!) as ImageProvider
-                              : const AssetImage('assets/images/bakery.png'),
-                          fit: BoxFit.cover,
-                          colorFilter: ColorFilter.mode(
-                            isSelected
-                                ? const Color(0x806B5E4B)
-                                : Colors.black45,
-                            BlendMode.darken,
-                          ),
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100.r),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(100.r),
+                      child: Stack(
                         children: [
-                          Text(
-                            category.name,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13.sp,
-                              fontFamily: 'Montserrat',
-                              fontWeight: FontWeight.w700,
+                          SafeNetworkImage(
+                            imageUrl: category.image,
+                            width: 100.w,
+                            height: 100.h,
+                            fit: BoxFit.cover,
+                            fallbackAsset: 'assets/images/bakery.png',
+                          ),
+                          Container(
+                            width: 100.w,
+                            height: 100.h,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0x806B5E4B)
+                                  : Colors.black45,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 8.h,
+                            left: 0,
+                            right: 0,
+                            child: Text(
+                              category.name,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13.sp,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ],
@@ -198,7 +201,6 @@ class _HomeState extends State<Home> {
   }
 
   Widget _buildProductsGrid() {
-    // ✅ No BlocProvider here — using top level ProductsBloc
     return BlocBuilder<ProductsBloc, ProductsState>(
       builder: (context, state) {
         if (state is ProductsLoading) {
@@ -237,21 +239,15 @@ class _HomeState extends State<Home> {
             return SizedBox(
               height: 300.h,
               child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.fastfood_outlined,
-                        size: 48, color: Color(0xFFCACBD4)),
-                    SizedBox(height: 12.h),
-                    Text(
-                      'no_products'.tr(args: [_selectedFilter]),
-                      style: TextStyle(
-                        color: const Color(0xFF8B8B8B),
-                        fontFamily: 'Montserrat',
-                        fontSize: 14.sp,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'no_products_in_category'.tr(),
+                  style: TextStyle(
+                    color: const Color(0xFF28293D) /* Text-neutral */,
+                    fontSize: 14,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.28,
+                  ),
                 ),
               ),
             );
@@ -277,8 +273,10 @@ class _HomeState extends State<Home> {
                 itemBuilder: (_, index) {
                   final product = products[index];
                   final isFav = favoriteIds.contains(product.id);
-                  final isActionLoading = favState is FavoritesActionLoading &&
-                      favState.productId == product.id;
+                  final isFavActionLoading =
+                      favState is FavoritesActionLoading &&
+                          favState.productId == product.id;
+                  final isAddingToCart = _addingToCartIds.contains(product.id);
 
                   return GestureDetector(
                     onTap: () {
@@ -292,7 +290,8 @@ class _HomeState extends State<Home> {
                       price: '${product.price} EGP',
                       imageUrl: product.imageUrl,
                       isFav: isFav,
-                      isActionLoading: isActionLoading,
+                      isFavActionLoading: isFavActionLoading,
+                      isAddingToCart: isAddingToCart,
                       onFavTap: () {
                         context.read<FavoritesBloc>().add(
                               ToggleFavorite(
@@ -301,9 +300,21 @@ class _HomeState extends State<Home> {
                               ),
                             );
                       },
-                      onAddTap: () {},
+                      onAddTap: () {
+                        if (product.isIngredient) {
+                          // Ingredient: navigate to item preview
+                          Navigator.of(context, rootNavigator: true).pushNamed(
+                            Routes.itemPreview,
+                            arguments: product,
+                          );
+                        } else {
+                          // Add to cart
+                          _addToCart(product);
+                        }
+                      },
                       rate: product.rate,
                       reviewCount: product.reviewCount,
+                      isIngredient: product.isIngredient,
                     ),
                   );
                 },
@@ -316,9 +327,62 @@ class _HomeState extends State<Home> {
       },
     );
   }
+
+  Future<void> _addToCart(ProductModel product) async {
+    if (_addingToCartIds.contains(product.id)) return;
+
+    setState(() {
+      _addingToCartIds.add(product.id);
+    });
+
+    try {
+      final cartBloc = context.read<CartBloc>();
+      cartBloc.add(AddToCart(
+        productId: product.id,
+        quantity: 1,
+      ));
+
+      // Wait for the cart to be updated (optional, you can rely on bloc listener)
+      // We'll navigate after a short delay to ensure the cart is added.
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('item_added_to_cart'.tr()),
+          backgroundColor: const Color(0xFF059B5A),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // Navigate to cart screen
+      // PersistentNavBarNavigator.pushNewScreen(
+      //   context,
+      //   screen: CartScreen(
+      //     controller: null, // or pass the controller if available
+      //     fromNav: false,
+      //     myTabIndex: 1, // adjust to your cart tab index
+      //   ),
+      //   withNavBar: true,
+      //   pageTransitionAnimation: PageTransitionAnimation.cupertino,
+      // );
+    } catch (e) {
+      print('Add to cart error: $e'); // 👈 see what the real error is
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('add_to_cart_failed'.tr())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _addingToCartIds.remove(product.id);
+        });
+      }
+    }
+  }
 }
 
-// Products Shimmer
+// Products Shimmer (unchanged)
 class ProductsShimmer extends StatelessWidget {
   const ProductsShimmer({super.key});
 

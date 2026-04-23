@@ -1,5 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:erb/core/network/api_client.dart';
 import 'package:erb/core/network/api_endpoints.dart';
+import 'package:erb/core/network/api_error_handler.dart';
 import 'package:erb/core/services/user_service.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,9 +11,12 @@ class OAuthService {
   // ✅ Use existing ApiClient instead of new Dio instance
   final _dio = ApiClient.instance;
 
-  // ─── Google ───────────────────────────────────────────
+// ─── Google ───────────────────────────────────────────
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
+      // ✅ v7+ API
+      await GoogleSignIn.instance.signOut(); // force account picker
+
       final GoogleSignInAccount googleUser =
           await GoogleSignIn.instance.authenticate();
 
@@ -27,23 +32,25 @@ class OAuthService {
 
       final data = response.data;
 
-      // ✅ Save using existing UserService.saveUser()
       await UserService().saveUser(
         id: data['_id'] ?? '',
         name: data['name'] ?? '',
         email: data['email'] ?? '',
-        phone: '', // API doesn't return phone for OAuth
+        phone: '',
         role: data['role'] ?? '',
         token: data['token'] ?? '',
       );
 
       return data;
+    } on DioException catch (e) {
+      throw ApiErrorHandler.handle(e);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       rethrow;
     }
   }
 
+  // ─── Apple ───────────────────────────────────────────
   Future<Map<String, dynamic>?> signInWithApple() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
@@ -66,22 +73,24 @@ class OAuthService {
 
       final data = response.data;
 
-      // ✅ Save using existing UserService.saveUser()
       await UserService().saveUser(
         id: data['_id'] ?? '',
         name: data['name'] ?? '',
         email: data['email'] ?? '',
-        phone: '', // API doesn't return phone for OAuth
+        phone: '',
         role: data['role'] ?? '',
         token: data['token'] ?? '',
       );
 
       return data;
+    } on DioException catch (e) {
+      throw ApiErrorHandler.handle(e);
     } catch (e) {
       rethrow;
     }
   }
 
+  // ─── Facebook ───────────────────────────────────────────
   Future<Map<String, dynamic>?> signInWithFacebook() async {
     try {
       // ✅ Trigger Facebook login
@@ -119,6 +128,8 @@ class OAuthService {
       );
 
       return data;
+    } on DioException catch (e) {
+      throw ApiErrorHandler.handle(e);
     } catch (e) {
       rethrow;
     }

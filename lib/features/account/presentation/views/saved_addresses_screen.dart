@@ -444,13 +444,13 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF0F0),
+              color: const Color(0xfffc90000),
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: const Icon(
               Icons.delete_outline,
               size: 16,
-              color: Color(0xFFE53935),
+              color: Colors.white,
             ),
           ),
         ),

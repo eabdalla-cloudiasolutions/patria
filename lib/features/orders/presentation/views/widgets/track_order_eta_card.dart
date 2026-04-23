@@ -4,12 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class TrackOrderEtaCard extends StatelessWidget {
   final String estimatedArrival;
-  final String minsAway;
+  // final String minsAway;
 
   const TrackOrderEtaCard({
     super.key,
     required this.estimatedArrival,
-    required this.minsAway,
+    // required this.minsAway,
   });
 
   @override
@@ -23,6 +23,13 @@ class TrackOrderEtaCard extends StatelessWidget {
       ),
       child: Row(
         children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Image.asset('assets/images/Clock.png'),
+          ),
+          SizedBox(
+            width: 8,
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,24 +58,24 @@ class TrackOrderEtaCard extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F0EA),
-              borderRadius: BorderRadius.circular(3.r),
-              border: Border.all(color: const Color(0x194A3F33), width: 2.w),
-            ),
-            child: Text(
-              'mins_away'.tr(args: [minsAway]),
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 12.sp,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0.24,
-              ),
-            ),
-          ),
+          // Container(
+          //   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+          //   decoration: BoxDecoration(
+          //     color: const Color(0xFFF5F0EA),
+          //     borderRadius: BorderRadius.circular(3.r),
+          //     border: Border.all(color: const Color(0x194A3F33), width: 2.w),
+          //   ),
+          //   child: Text(
+          //     'mins_away'.tr(args: [minsAway]),
+          //     style: TextStyle(
+          //       color: Colors.black,
+          //       fontSize: 12.sp,
+          //       fontFamily: 'Montserrat',
+          //       fontWeight: FontWeight.w500,
+          //       letterSpacing: 0.24,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

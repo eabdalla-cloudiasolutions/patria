@@ -8,21 +8,13 @@ class CouponApi {
 
   Future<Map<String, dynamic>> validateCoupon(
       String code, double subtotal) async {
-    try {
-      final response = await _dio.post(
-        ApiEndpoints.validateCoupon,
-        data: {
-          'code': code,
-          'orderTotal': subtotal, // ✅ key must be 'total'
-        },
-      );
-      return response.data;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 400) {
-        final message = e.response?.data['message'] ?? 'Invalid coupon';
-        throw Exception(message);
-      }
-      throw Exception('Failed to validate coupon: ${e.message}');
-    }
+    final response = await _dio.post(
+      ApiEndpoints.validateCoupon,
+      data: {
+        'code': code,
+        'orderTotal': subtotal,
+      },
+    );
+    return response.data;
   }
 }

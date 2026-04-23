@@ -16,40 +16,40 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     on<ToggleFavorite>(_onToggleFavorite);
   }
 
-  Future<void> _onFetchFavorites(
-    FetchFavorites event,
-    Emitter<FavoritesState> emit,
-  ) async {
-    emit(FavoritesLoading());
-
-    try {
-      final favorites = await _favoritesRepo.getFavorites();
-      emit(
-          FavoritesLoaded(favorites: favorites)); // ✅ Use 'favorites' parameter
-    } catch (e) {
-      emit(FavoritesError(message: e.toString()));
-    }
-  }
+  // Future<void> _onFetchFavorites(
+  //   FetchFavorites event,
+  //   Emitter<FavoritesState> emit,
+  // ) async {
+  //   emit(FavoritesLoading());
+  //   try {
+  //     final favorites = await _favoritesRepo.getFavorites();
+  //     emit(FavoritesLoaded(favorites: favorites));
+  //   } catch (e) {
+  //     final message = e is String ? e : e.toString();
+  //     emit(FavoritesError(message: message));
+  //   }
+  // }
 
   Future<void> _onAddToFavorites(
     AddToFavorites event,
     Emitter<FavoritesState> emit,
   ) async {
+    // ✅ Save current favorites before loading
     final currentState = state;
-    if (currentState is FavoritesLoaded) {
-      // Optimistic update
-      final updatedFavorites =
-          List<FavoriteProductModel>.from(currentState.favorites);
-      // Note: You might need to add the product to the list if you have the full product data
-      emit(FavoritesLoaded(favorites: updatedFavorites));
-    }
+    final currentFavorites = currentState is FavoritesLoaded
+        ? currentState.favorites
+        : <FavoriteProductModel>[];
 
+    emit(FavoritesActionLoading(productId: event.productId));
     try {
       await _favoritesRepo.addToFavorites(event.productId);
-      add(FetchFavorites()); // Refresh to get accurate data
+      final updated = await _favoritesRepo.getFavorites();
+      emit(FavoritesLoaded(
+          favorites: updated)); // ✅ directly emit, no add(FetchFavorites)
     } catch (e) {
-      emit(FavoritesError(message: e.toString()));
-      add(FetchFavorites()); // Revert on error
+      final message = e is String ? e : e.toString();
+      emit(FavoritesError(message: message));
+      emit(FavoritesLoaded(favorites: currentFavorites)); // ✅ restore on error
     }
   }
 
@@ -58,20 +58,35 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     Emitter<FavoritesState> emit,
   ) async {
     final currentState = state;
-    if (currentState is FavoritesLoaded) {
-      // Optimistic update
-      final updatedFavorites = currentState.favorites
-          .where((item) => item.id != event.productId)
-          .toList();
-      emit(FavoritesLoaded(favorites: updatedFavorites));
-    }
+    final currentFavorites = currentState is FavoritesLoaded
+        ? currentState.favorites
+        : <FavoriteProductModel>[];
 
+    emit(FavoritesActionLoading(productId: event.productId));
     try {
       await _favoritesRepo.removeFromFavorites(event.productId);
-      // No need to refresh since we already updated optimistically
+      // ✅ Optimistically remove without re-fetching
+      final updated =
+          currentFavorites.where((item) => item.id != event.productId).toList();
+      emit(FavoritesLoaded(favorites: updated));
     } catch (e) {
-      emit(FavoritesError(message: e.toString()));
-      add(FetchFavorites()); // Revert on error
+      final message = e is String ? e : e.toString();
+      emit(FavoritesError(message: message));
+      emit(FavoritesLoaded(favorites: currentFavorites)); // ✅ restore on error
+    }
+  }
+
+  Future<void> _onFetchFavorites(
+    FetchFavorites event,
+    Emitter<FavoritesState> emit,
+  ) async {
+    // ✅ Don't emit FavoritesLoading here to avoid wiping the list
+    try {
+      final favorites = await _favoritesRepo.getFavorites();
+      emit(FavoritesLoaded(favorites: favorites));
+    } catch (e) {
+      final message = e is String ? e : e.toString();
+      emit(FavoritesError(message: message));
     }
   }
 

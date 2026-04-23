@@ -1,4 +1,6 @@
 // ─── Bloc ─────────────────────────────────────────────
+import 'package:dio/dio.dart';
+import 'package:erb/core/network/api_error_handler.dart';
 import 'package:erb/features/account/data/apis/payment_api.dart';
 import 'package:erb/features/account/presentation/manager/payments_card/payment_event.dart';
 import 'package:erb/features/account/presentation/manager/payments_card/payment_state.dart';
@@ -20,7 +22,8 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       final methods = await _api.getPaymentMethods();
       emit(PaymentLoaded(methods));
     } catch (e) {
-      emit(PaymentError(e.toString()));
+      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      emit(PaymentError(errorMessage));
     }
   }
 }

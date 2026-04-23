@@ -42,4 +42,21 @@ class ProductsRepo {
       throw ApiErrorHandler.handle(e);
     }
   }
+
+  Future<ProductModel> getProductById(String id) async {
+    try {
+      final response = await _api.getProductById(id);
+      // API might return { "data": { ... } } or just the product object
+      final Map<String, dynamic> productData;
+      if (response.data['data'] != null &&
+          response.data['data'] is Map<String, dynamic>) {
+        productData = response.data['data'];
+      } else {
+        productData = response.data as Map<String, dynamic>;
+      }
+      return ProductModel.fromJson(productData);
+    } on DioException catch (e) {
+      throw ApiErrorHandler.handle(e);
+    }
+  }
 }

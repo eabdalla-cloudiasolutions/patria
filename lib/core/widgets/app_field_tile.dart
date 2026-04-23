@@ -5,6 +5,7 @@ class AppFieldTile extends StatelessWidget {
   final String text;
   final String prefixImage;
   final IconData? suffixIcon;
+  final String? suffixText;
   final VoidCallback? onTap;
   final VoidCallback? onSuffixTap;
 
@@ -15,6 +16,7 @@ class AppFieldTile extends StatelessWidget {
     this.suffixIcon,
     this.onTap,
     this.onSuffixTap,
+    this.suffixText,
   });
 
   @override

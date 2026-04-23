@@ -15,18 +15,17 @@ class SplashScreen extends StatelessWidget {
     try {
       final result = await OAuthService().signInWithGoogle();
       if (result == null || !context.mounted) return;
-
-      // ✅ save token if needed
-      // await TokenStorage.save(result['token']);
-
       Navigator.of(context, rootNavigator: true)
           .pushNamedAndRemoveUntil(Routes.baseLayer, (_) => false);
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('google_sign_in_failed'
-                .tr(namedArgs: {'error': e.toString()}))),
+          content: Text(
+            'google_sign_in_failed'.tr(namedArgs: {'error': e.toString()}),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -35,18 +34,17 @@ class SplashScreen extends StatelessWidget {
     try {
       final result = await OAuthService().signInWithApple();
       if (result == null || !context.mounted) return;
-
-      // ✅ save token if needed
-      // await TokenStorage.save(result['token']);
-
       Navigator.of(context, rootNavigator: true)
           .pushNamedAndRemoveUntil(Routes.baseLayer, (_) => false);
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'apple_sign_in_failed'.tr(namedArgs: {'error': e.toString()}))),
+          content: Text(
+            'apple_sign_in_failed'.tr(namedArgs: {'error': e.toString()}),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -55,15 +53,17 @@ class SplashScreen extends StatelessWidget {
     try {
       final result = await OAuthService().signInWithFacebook();
       if (result == null || !context.mounted) return;
-
       Navigator.of(context, rootNavigator: true)
           .pushNamedAndRemoveUntil(Routes.baseLayer, (_) => false);
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('facebook_sign_in_failed'
-                .tr(namedArgs: {'error': e.toString()}))),
+          content: Text(
+            'facebook_sign_in_failed'.tr(namedArgs: {'error': e.toString()}),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -90,7 +90,6 @@ class SplashScreen extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // Logo
                   Padding(
                     padding: EdgeInsets.only(top: 80.h),
                     child: Container(
@@ -109,16 +108,13 @@ class SplashScreen extends StatelessWidget {
                       delay: 0.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 40.h),
-
-                  // Title
                   Text(
                     'splash_title'.tr(),
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFF6B5E4B),
+                      color: const Color(0xFF6B5E4B),
                       fontSize: 24.sp,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w800,
@@ -131,15 +127,12 @@ class SplashScreen extends StatelessWidget {
                       delay: 200.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 6.h),
-
-                  // Subtitle
                   Text(
                     'splash_subtitle'.tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFF515151),
+                      color: const Color(0xFF515151),
                       fontSize: 14.sp,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w400,
@@ -152,10 +145,7 @@ class SplashScreen extends StatelessWidget {
                       delay: 400.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 24.h),
-
-                  // Create Account Button
                   ElevatedButton(
                     onPressed: () {
                       showModalBottomSheet(
@@ -190,10 +180,7 @@ class SplashScreen extends StatelessWidget {
                       delay: 600.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 12.h),
-
-                  // Sign In Button
                   OutlinedButton(
                     onPressed: () {
                       showModalBottomSheet(
@@ -231,10 +218,7 @@ class SplashScreen extends StatelessWidget {
                       delay: 800.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 32.h),
-
-                  // Divider
                   Row(
                     children: [
                       const Expanded(
@@ -245,7 +229,7 @@ class SplashScreen extends StatelessWidget {
                         child: Text(
                           'or_continue_with'.tr(),
                           style: TextStyle(
-                            color: Color(0xFF6B5E4B),
+                            color: const Color(0xFF6B5E4B),
                             fontSize: 14.sp,
                             fontFamily: 'Montserrat',
                             fontWeight: FontWeight.w500,
@@ -262,49 +246,39 @@ class SplashScreen extends StatelessWidget {
                       delay: 1000.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 24.h),
-
-                  // Google Button
                   SocialButton(
                     label: 'sign_up_google'.tr(),
                     iconPath: 'assets/images/google_icon.svg',
-                    onPressed: () => _handleGoogleSignIn(context), // ✅
+                    onPressed: () => _handleGoogleSignIn(context),
                   ).animate().fadeIn(delay: 1200.ms, duration: 600.ms).slideY(
                       begin: 0.3,
                       end: 0,
                       delay: 1200.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 16.h),
-
-                  // Facebook Button
                   SocialButton(
                     label: 'sign_up_facebook'.tr(),
                     iconPath: 'assets/images/facebook_icon.svg',
-                    onPressed: () => _handleFacebookSignIn(context), // ✅
+                    onPressed: () => _handleFacebookSignIn(context),
                   ).animate().fadeIn(delay: 1400.ms, duration: 600.ms).slideY(
                       begin: 0.3,
                       end: 0,
                       delay: 1400.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 16.h),
-
-                  // Apple Button
                   SocialButton(
                     label: 'sign_up_apple'.tr(),
                     iconPath: 'assets/images/apple_icon.svg',
-                    onPressed: () => _handleAppleSignIn(context), // ✅
+                    onPressed: () => _handleAppleSignIn(context),
                   ).animate().fadeIn(delay: 1600.ms, duration: 600.ms).slideY(
                       begin: 0.3,
                       end: 0,
                       delay: 1600.ms,
                       duration: 600.ms,
                       curve: Curves.easeOutCubic),
-
                   SizedBox(height: 16.h),
                 ],
               ),

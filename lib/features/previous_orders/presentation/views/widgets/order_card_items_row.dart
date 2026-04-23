@@ -30,7 +30,7 @@ class OrderCardItemsRow extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 decoration: ShapeDecoration(
                   image: DecorationImage(
-                    image: AssetImage(url),
+                    image: NetworkImage(url), // ✅ Changed from AssetImage
                     fit: BoxFit.cover,
                   ),
                   shape: RoundedRectangleBorder(

@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:erb/features/home/data/models/favorite_product_model.dart';
 import 'package:erb/features/home/presentation/views/favourites_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,7 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class FavouritesSearchDelegate extends SearchDelegate {
   final List<Map<String, String>> favourites;
 
-  FavouritesSearchDelegate(this.favourites); // ✅ receives fav list
+  FavouritesSearchDelegate(this.favourites);
 
   @override
   String get searchFieldLabel => 'Search favourites...';
@@ -112,13 +113,20 @@ class FavouritesSearchDelegate extends SearchDelegate {
       ),
       itemCount: _filtered.length,
       itemBuilder: (context, index) {
-        final item = _filtered[index];
+        final map = _filtered[index];
+        final favoriteItem = FavoriteProductModel(
+          id: map['id'] ?? '',
+          name: map['name'] ?? '',
+          price: map['price'] ?? '0',
+          rate: map['rate'] ?? '0',
+          reviews: map['reviews'] ?? '0',
+          image: map['image'] ?? '',
+          isFavorite: true,
+        );
         return ProductCard(
-          item: item,
-          productId: item['id'] ?? '', // ✅ Add productId from the item
+          favoriteItem: favoriteItem,
           onFavTap: () {
-            // Optional: Handle favorite toggle from search delegate
-            // You might want to close search and refresh the main screen
+            // Close search after tapping favorite (optional)
             close(context, null);
           },
         );

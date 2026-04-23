@@ -6,12 +6,14 @@ class ProductSizeSelector extends StatefulWidget {
   final List<String> options;
   final Function(String) onSizeSelected;
   final String? customTitle;
+  final String? selectedOption; // 👈 externally controlled selection
 
   const ProductSizeSelector({
     super.key,
     required this.options,
     required this.onSizeSelected,
     this.customTitle,
+    this.selectedOption,
   });
 
   @override
@@ -19,20 +21,28 @@ class ProductSizeSelector extends StatefulWidget {
 }
 
 class _ProductSizeSelectorState extends State<ProductSizeSelector> {
-  late String _selectedOption;
+  late String? _selectedOption;
 
   @override
   void initState() {
     super.initState();
-    if (widget.options.isNotEmpty) {
-      _selectedOption = widget.options.first;
-      widget.onSizeSelected(_selectedOption);
+    _selectedOption =
+        widget.selectedOption; // start with external value (null by default)
+    // Do NOT auto-select first option
+  }
+
+  @override
+  void didUpdateWidget(ProductSizeSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedOption != oldWidget.selectedOption) {
+      setState(() {
+        _selectedOption = widget.selectedOption;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Don't show anything if no options available
     if (widget.options.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -40,18 +50,8 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section Title with colored bar
         Row(
           children: [
-            Container(
-              width: 4.w,
-              height: 18.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF6B5E4B),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
-            ),
-            SizedBox(width: 8.w),
             Text(
               widget.customTitle ?? 'choose_options'.tr(),
               style: TextStyle(
@@ -65,8 +65,6 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
           ],
         ),
         SizedBox(height: 12.h),
-
-        // Subtitle (choose one)
         Text(
           'choose_one'.tr(),
           style: TextStyle(
@@ -79,8 +77,6 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
           ),
         ),
         SizedBox(height: 12.h),
-
-        // 👇 Options in a SINGLE ROW (Horizontal)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
@@ -98,11 +94,8 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
                   duration: const Duration(milliseconds: 200),
                   padding:
                       EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                  constraints: BoxConstraints(
-                    minWidth: 80.w,
-                  ),
-                  margin: EdgeInsets.only(
-                      right: 12.w), // 👈 spacing between options
+                  constraints: BoxConstraints(minWidth: 80.w),
+                  margin: EdgeInsets.only(right: 12.w),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFFF5F0EA)

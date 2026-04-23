@@ -9,9 +9,11 @@ class HomeProductCard extends StatelessWidget {
   final double rate;
   final int reviewCount;
   final bool isFav;
-  final bool isActionLoading;
+  final bool isFavActionLoading;
+  final bool isAddingToCart; // 👈 new: loading state for add button
   final VoidCallback onFavTap;
   final VoidCallback onAddTap;
+  final bool isIngredient;
 
   const HomeProductCard({
     super.key,
@@ -21,9 +23,11 @@ class HomeProductCard extends StatelessWidget {
     required this.rate,
     required this.reviewCount,
     this.isFav = false,
-    this.isActionLoading = false,
+    this.isFavActionLoading = false,
+    this.isAddingToCart = false, // 👈 default false
     required this.onFavTap,
     required this.onAddTap,
+    required this.isIngredient,
   });
 
   @override
@@ -66,7 +70,7 @@ class HomeProductCard extends StatelessWidget {
                   top: 9.h,
                   right: 9.w,
                   child: GestureDetector(
-                    onTap: isActionLoading ? null : onFavTap,
+                    onTap: isFavActionLoading ? null : onFavTap,
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
@@ -80,7 +84,7 @@ class HomeProductCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: isActionLoading
+                      child: isFavActionLoading
                           ? SizedBox(
                               width: 14,
                               height: 14,
@@ -125,32 +129,6 @@ class HomeProductCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        SizedBox(height: 4.h),
-                        Row(
-                          children: [
-                            const Icon(Icons.star_border,
-                                size: 12, color: Colors.black),
-                            SizedBox(width: 2.w),
-                            Text(
-                              rate.toString(),
-                              style: TextStyle(
-                                color: const Color(0xFF333333),
-                                fontSize: 10.sp,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Text(
-                              ' ($reviewCount)',
-                              style: TextStyle(
-                                color: const Color(0xFF515151),
-                                fontSize: 10.sp,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
@@ -185,7 +163,7 @@ class HomeProductCard extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: onAddTap,
+                        onTap: isAddingToCart ? null : onAddTap,
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: ShapeDecoration(
@@ -194,11 +172,22 @@ class HomeProductCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                           ),
-                          child: const Icon(
-                            Icons.add,
-                            size: 14,
-                            color: Colors.white,
-                          ),
+                          child: isAddingToCart
+                              ? SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Icon(
+                                  isIngredient
+                                      ? Icons.arrow_forward_ios_outlined
+                                      : Icons.add,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
                         ),
                       ),
                     ],

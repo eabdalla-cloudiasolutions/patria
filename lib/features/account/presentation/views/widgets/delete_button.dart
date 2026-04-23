@@ -1,3 +1,5 @@
+// ignore_for_file: use_full_hex_values_for_flutter_colors
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -24,18 +26,11 @@ class DeleteButton extends StatelessWidget {
     return SizedBox(
       width: width ?? double.infinity,
       height: height.h,
-      child: ElevatedButton(
-        onPressed: (isEnabled && !isLoading) ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFFF0F0), // Light red background
-          foregroundColor: const Color(0xFFC90000), // Red text
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5.r),
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 16.h),
+      child: GestureDetector(
+        onTap: (isEnabled && !isLoading) ? onPressed : null,
+        child: Center(
+          child: _buildChild(),
         ),
-        child: _buildChild(),
       ),
     );
   }

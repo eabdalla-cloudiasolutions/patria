@@ -1,5 +1,7 @@
 import 'package:bloc/bloc.dart';
+import 'package:dio/dio.dart'; // ✅ add this
 import 'package:equatable/equatable.dart';
+import 'package:erb/core/network/api_error_handler.dart'; // ✅ add this
 import 'package:erb/features/account/data/models/loyalty_points_model.dart';
 import 'package:erb/features/account/data/repos/loyalty_repo.dart';
 import 'package:erb/features/account/presentation/manager/loyalty/loyalty_event.dart';
@@ -26,7 +28,9 @@ class LoyaltyBloc extends Bloc<LoyaltyEvent, LoyaltyState> {
       final loyaltyData = await _loyaltyRepo.getLoyaltyPoints();
       emit(LoyaltyLoaded(loyaltyData: loyaltyData));
     } catch (e) {
-      emit(LoyaltyError(message: e.toString()));
+      // ✅ Use ApiErrorHandler
+      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      emit(LoyaltyError(message: errorMessage));
     }
   }
 
@@ -34,14 +38,15 @@ class LoyaltyBloc extends Bloc<LoyaltyEvent, LoyaltyState> {
     RefreshLoyaltyPoints event,
     Emitter<LoyaltyState> emit,
   ) async {
-    // Same as fetch, but we can add refresh-specific logic if needed
     emit(LoyaltyLoading());
 
     try {
       final loyaltyData = await _loyaltyRepo.getLoyaltyPoints();
       emit(LoyaltyLoaded(loyaltyData: loyaltyData));
     } catch (e) {
-      emit(LoyaltyError(message: e.toString()));
+      // ✅ Use ApiErrorHandler
+      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      emit(LoyaltyError(message: errorMessage));
     }
   }
 }

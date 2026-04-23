@@ -2,11 +2,11 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- ✅ add this -->
     <application
         android:label="erb"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -24,20 +24,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- ✅ Facebook App ID -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="1674670577290865"/>
-        <!-- ✅ Facebook Client Token -->
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
             android:value="9a42ce68e9afae7b304ffdb7fa01b4cc"/>
-        <!-- ✅ Facebook Login Activity -->
         <activity
             android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:label="@string/app_name" />
-        <!-- ✅ Facebook Custom Tab Activity -->
         <activity
             android:name="com.facebook.CustomTabActivity"
             android:exported="true">
@@ -61,7 +57,6 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
         </intent>
-        <!-- ✅ Facebook -->
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="fb1674670577290865" />

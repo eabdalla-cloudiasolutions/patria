@@ -12,6 +12,7 @@ class ProductModel {
   final List<String>? sizes; // 👈 أضف هذا
   final List<String>? otherOptions;
   final CustomizationOptions? customizationOptions; // 👈 أضف هذا
+  final bool isIngredient;
 
   ProductModel({
     required this.id,
@@ -27,6 +28,7 @@ class ProductModel {
     this.sizes,
     this.otherOptions,
     this.customizationOptions, // 👈 أضف هذا
+    required this.isIngredient,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -53,6 +55,7 @@ class ProductModel {
           ? List<String>.from(json['otherOptions'])
           : null,
       customizationOptions: customizationOptions,
+      isIngredient: json['isIngredient'] ?? true,
     );
   }
 

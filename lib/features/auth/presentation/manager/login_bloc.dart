@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+import 'package:erb/core/network/api_error_handler.dart';
 import 'package:erb/core/services/user_service.dart'; // 👈 Add this import
 import 'package:erb/features/auth/data/models/login_request_model.dart';
 import 'package:erb/features/auth/data/repos/auth_repo.dart';
@@ -36,7 +38,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
       emit(LoginSuccess(response));
     } catch (e) {
-      emit(LoginFailure(e.toString()));
+      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      emit(LoginFailure(errorMessage));
     }
   }
 }

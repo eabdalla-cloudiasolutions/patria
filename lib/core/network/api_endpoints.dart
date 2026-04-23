@@ -14,6 +14,9 @@ class ApiEndpoints {
   static const String sendVerification = '/auth/send-verification';
   static const String verifyOtp = '/auth/verify-phone';
 
+  static const String checkoutPreview = '/users/loyalty/checkout-preview';
+  static const String reviews = '/reviews';
+
   // Products
   static const String products = '/products';
   static String productById(String id) => '/products/$id';
@@ -32,9 +35,9 @@ class ApiEndpoints {
 
   // Favorites endpoints
   static const String getFavorites = '/users/favorites';
-  static const String addToFavorites = '/users/favorites';
-  static const String removeFromFavorites =
-      '/users/favorites'; // + /{productId}
+  static String addToFavorites(String id) => '/users/favorites/$id';
+  static String removeFromFavorites(String id) =>
+      '/users/favorites/$id'; // + /{productId}
 
   static const String updateProfile = '/users/profile';
 
@@ -50,8 +53,23 @@ class ApiEndpoints {
 
   static const String validateCoupon = '/coupons/validate';
 
-  //NOTIFICATIONS
-  static const String registerDeviceToken = '/notifications/register-token';
-  static const String unregisterDeviceToken =
-      '/notifications/unregister-token'; // same path,
+  // //NOTIFICATIONS
+  // static const String registerDeviceToken = '/notifications/register-token';
+  // static const String unregisterDeviceToken =
+  //     '/notifications/unregister-token'; // same path,
+
+  //       //NOTIFICATIONS
+  static const String registerDeviceToken = '/notifications/device';
+  static const String unregisterDeviceToken = '/notifications/device';
+
+  static const String deliveryZones = '/zones';
+  static const String placeOrder = '/orders';
+
+  static const String cart = '/cart';
+  static const String addCart = '/cart/add';
+  static const String clearCart = '/cart/clear';
+  static String updateCartItem(String id) => '/cart/update/$id'; // 👈 add this
+  static String removeCartItem(String id) => '/cart/remove/$id'; // 👈 add this
+
+  static String trackOrder(String id) => '/orders/$id';
 }

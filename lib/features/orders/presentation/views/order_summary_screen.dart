@@ -1,8 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/orders/presentation/views/track_order_screen.dart';
+import 'package:erb/core/routing/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 import 'widgets/order_cart_item.dart';
 import 'widgets/order_confirmation_card.dart';
@@ -18,6 +17,8 @@ class OrderSummaryScreen extends StatelessWidget {
   final String deliveryAddress;
   final String paymentMethod;
   final String orderNumber;
+  final String orderId;
+  final String status; // 👈 added
   final int pointsEarned;
 
   const OrderSummaryScreen({
@@ -29,13 +30,23 @@ class OrderSummaryScreen extends StatelessWidget {
     required this.deliveryAddress,
     required this.paymentMethod,
     required this.orderNumber,
+    required this.orderId,
+    this.status = 'Pending', // 👈 default to Pending
     required this.pointsEarned,
   });
 
+  bool get _isActiveOrder {
+    final s = status.toLowerCase();
+    return s == 'pending' ||
+        s == 'confirmed' ||
+        s == 'preparing' ||
+        s == 'active' ||
+        s == 'out for delivery';
+  }
+
   @override
   Widget build(BuildContext context) {
-    // ✅ Dynamic date & time using the current locale
-    final locale = context.locale.toString(); // e.g., 'en_US', 'ar'
+    final locale = context.locale.toString();
     final now = DateTime.now();
     final formatter = DateFormat("MMMM d, yyyy 'at' hh:mm a", locale);
     final formattedDateTime = formatter.format(now);
@@ -81,7 +92,10 @@ class OrderSummaryScreen extends StatelessWidget {
               paymentMethod: paymentMethod,
             ),
             SizedBox(height: 24.h),
-            _buildTrackOrderButton(context),
+
+            // 👇 Show Track Order only for active orders
+            if (_isActiveOrder) _buildTrackOrderButton(context),
+
             SizedBox(height: 32.h),
           ],
         ),
@@ -106,7 +120,7 @@ class OrderSummaryScreen extends StatelessWidget {
         ),
         SizedBox(height: 6.h),
         Text(
-          formattedDateTime, // ✅ Dynamic date & time
+          formattedDateTime,
           style: TextStyle(
             color: const Color(0xFF515151),
             fontSize: 12.sp,
@@ -123,6 +137,8 @@ class OrderSummaryScreen extends StatelessWidget {
           ),
           child: ListView.separated(
             shrinkWrap: true,
+            padding: EdgeInsets.zero, // 👈 add this
+
             physics: const NeverScrollableScrollPhysics(),
             itemCount: cartItems.length,
             separatorBuilder: (_, __) =>
@@ -139,17 +155,14 @@ class OrderSummaryScreen extends StatelessWidget {
       width: double.infinity,
       height: 56.h,
       child: ElevatedButton.icon(
-        onPressed: () => PersistentNavBarNavigator.pushNewScreen(
-          context,
-          screen: TrackOrderScreen(
-            orderNumber: orderNumber,
-            estimatedArrival: '02:45 PM - 1:10 PM',
-            minsAway: 18,
-            riderName: 'Mostafa',
-            currentStep: 2,
-          ),
-          withNavBar: true,
-          pageTransitionAnimation: PageTransitionAnimation.cupertino,
+        onPressed: () => Navigator.of(context, rootNavigator: true).pushNamed(
+          Routes.trackOrder,
+          arguments: {
+            'orderNumber': orderNumber,
+            'orderId': orderId,
+            'estimatedArrival': '02:45 PM - 1:10 PM',
+            'currentStep': 0,
+          },
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF6B5E4B),

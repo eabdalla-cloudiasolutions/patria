@@ -19,7 +19,8 @@ class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
       final categories = await _api.getCategories();
       emit(CategoriesLoaded(categories));
     } catch (e) {
-      emit(CategoriesError(e.toString()));
+      final errorMessage = e is String ? e : e.toString();
+      emit(CategoriesError(errorMessage));
     }
   }
 }

@@ -4,6 +4,11 @@
 	<dict>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+		</dict>
 		<key>NSUserNotificationsUsageDescription</key>
 		<string>We need to send you order updates and promotional offers</string>
 		<key>FirebaseAppDelegateProxyEnabled</key>
@@ -33,7 +38,7 @@
 				<string>Editor</string>
 				<key>CFBundleURLSchemes</key>
 				<array>
-					<string>com.googleusercontent.apps.88148957283-oe5kvqlelp2lfl1sdfoj58m9kihpdmpf</string>
+					<string>com.googleusercontent.apps.920170611908-tb458rvs27i61lafg09rg4st00vvtcu1</string>
 				</array>
 			</dict>
 			<dict>
