@@ -1,10 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart'; // ✅ add this
 import 'package:equatable/equatable.dart';
-import 'package:erb/core/network/api_error_handler.dart'; // ✅ add this
-import 'package:erb/features/account/data/models/loyalty_points_model.dart';
-import 'package:erb/features/account/data/repos/loyalty_repo.dart';
-import 'package:erb/features/account/presentation/manager/loyalty/loyalty_event.dart';
+import 'package:patria/core/network/api_error_handler.dart'; // ✅ add this
+import 'package:patria/features/account/data/models/loyalty_points_model.dart';
+import 'package:patria/features/account/data/repos/loyalty_repo.dart';
+import 'package:patria/features/account/presentation/manager/loyalty/loyalty_event.dart';
 
 part 'loyalty_state.dart';
 
@@ -12,8 +12,8 @@ class LoyaltyBloc extends Bloc<LoyaltyEvent, LoyaltyState> {
   final LoyaltyRepo _loyaltyRepo;
 
   LoyaltyBloc({required LoyaltyRepo loyaltyRepo})
-      : _loyaltyRepo = loyaltyRepo,
-        super(LoyaltyInitial()) {
+    : _loyaltyRepo = loyaltyRepo,
+      super(LoyaltyInitial()) {
     on<FetchLoyaltyPoints>(_onFetchLoyaltyPoints);
     on<RefreshLoyaltyPoints>(_onRefreshLoyaltyPoints);
   }

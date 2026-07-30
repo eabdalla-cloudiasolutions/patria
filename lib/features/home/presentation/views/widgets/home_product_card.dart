@@ -1,6 +1,6 @@
-import 'package:erb/core/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/widgets/safe_network_image.dart';
 
 class HomeProductCard extends StatelessWidget {
   final String name;
@@ -96,8 +96,9 @@ class HomeProductCard extends StatelessWidget {
                           : Icon(
                               isFav ? Icons.favorite : Icons.favorite_border,
                               size: 14,
-                              color:
-                                  isFav ? Colors.red : const Color(0xFF8B8B8B),
+                              color: isFav
+                                  ? Colors.red
+                                  : const Color(0xFF8B8B8B),
                             ),
                     ),
                   ),
@@ -167,7 +168,7 @@ class HomeProductCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: ShapeDecoration(
-                            color: const Color(0xFF6B5E4B),
+                            color: const Color(0xFF3C4119),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(6.r),
                             ),

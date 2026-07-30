@@ -59,17 +59,19 @@ class OrderItem {
   final String product;
   final String name;
   final int quantity;
-  final double price;
-  final String notes; // 👈 renamed from specialRequest
+  final double price; // still send, but backend may ignore
+  final String notes;
   final Customization customization;
+  final List<SelectedVariant> selectedVariants; // 👈 add this
 
   OrderItem({
     required this.product,
     required this.name,
     required this.quantity,
     required this.price,
-    this.notes = '', // 👈 renamed, optional with default
+    this.notes = '',
     required this.customization,
+    this.selectedVariants = const [], // 👈
   });
 
   Map<String, dynamic> toJson() => {
@@ -77,8 +79,27 @@ class OrderItem {
         'name': name,
         'quantity': quantity,
         'price': price,
-        'notes': notes, // 👈 renamed
+        'notes': notes,
         'customization': customization.toJson(),
+        'selectedVariants':
+            selectedVariants.map((v) => v.toJson()).toList(), // 👈
+      };
+}
+
+class SelectedVariant {
+  final String group;
+  final String option;
+  final double priceAdjustment;
+
+  SelectedVariant(
+      {required this.group,
+      required this.option,
+      required this.priceAdjustment});
+
+  Map<String, dynamic> toJson() => {
+        'group': group,
+        'option': option,
+        'priceAdjustment': priceAdjustment,
       };
 }
 
@@ -97,7 +118,6 @@ class Customization {
 class OrderSummary {
   final double subtotal;
   final double deliveryFee;
-  final double surcharges;
   final double discount;
   final double total;
   final Coupon coupon;
@@ -105,7 +125,6 @@ class OrderSummary {
   OrderSummary({
     required this.subtotal,
     required this.deliveryFee,
-    required this.surcharges,
     required this.discount,
     required this.total,
     required this.coupon,
@@ -114,7 +133,6 @@ class OrderSummary {
   Map<String, dynamic> toJson() => {
         'subtotal': subtotal,
         'deliveryFee': deliveryFee,
-        'surcharges': surcharges,
         'discount': discount,
         'total': total,
         'coupon': coupon.toJson(),

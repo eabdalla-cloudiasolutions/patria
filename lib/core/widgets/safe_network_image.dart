@@ -14,13 +14,14 @@ class SafeNetworkImage extends StatelessWidget {
     this.width = double.infinity,
     this.height = double.infinity,
     this.fit = BoxFit.cover,
-    this.fallbackAsset = 'assets/images/erbLogo.png',
+    this.fallbackAsset = 'assets/images/patria_icon.png',
   });
 
   @override
   Widget build(BuildContext context) {
     // Check if URL is valid
-    final isValidUrl = imageUrl != null &&
+    final isValidUrl =
+        imageUrl != null &&
         imageUrl!.isNotEmpty &&
         (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://'));
 
@@ -46,7 +47,7 @@ class SafeNetworkImage extends StatelessWidget {
         if (loadingProgress == null) return child;
         return Center(
           child: CircularProgressIndicator(
-            color: const Color(0xFF6B5E4B),
+            color: const Color(0xFF3C4119),
             strokeWidth: 2.w,
           ),
         );
@@ -62,7 +63,7 @@ class SafeNetworkImage extends StatelessWidget {
     return Container(
       width: width,
       height: height,
-      color: const Color(0xFFF5F0EA),
+      color: const Color(0xFFE5E8D3),
       child: Icon(
         Icons.image_outlined,
         size: 40.sp,

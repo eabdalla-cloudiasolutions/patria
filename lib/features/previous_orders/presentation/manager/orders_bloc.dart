@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/previous_orders/data/apis/orders_api.dart';
-import 'package:erb/features/previous_orders/presentation/manager/orders_event.dart';
-import 'package:erb/features/previous_orders/presentation/manager/orders_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/previous_orders/data/apis/orders_api.dart';
+import 'package:patria/features/previous_orders/presentation/manager/orders_event.dart';
+import 'package:patria/features/previous_orders/presentation/manager/orders_state.dart';
 
 class OrdersBloc extends Bloc<OrdersEvent, OrdersState> {
   final OrdersApi _api = OrdersApi();

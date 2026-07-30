@@ -9,9 +9,10 @@ class ProductModel {
   final int reviewCount;
   final bool isAvailable;
   final List<String> images;
-  final List<String>? sizes; // 👈 أضف هذا
+  final List<String>? sizes;
   final List<String>? otherOptions;
-  final CustomizationOptions? customizationOptions; // 👈 أضف هذا
+  final bool haveCustomizationOption; // new
+  final List<VariantGroup> variantGroups; // new
   final bool isIngredient;
 
   ProductModel({
@@ -27,18 +28,12 @@ class ProductModel {
     this.images = const [],
     this.sizes,
     this.otherOptions,
-    this.customizationOptions, // 👈 أضف هذا
+    this.haveCustomizationOption = false,
+    this.variantGroups = const [],
     required this.isIngredient,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    // Handle customization options
-    CustomizationOptions? customizationOptions;
-    if (json['customizationOptions'] != null) {
-      customizationOptions =
-          CustomizationOptions.fromJson(json['customizationOptions']);
-    }
-
     return ProductModel(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       name: json['name'] ?? '',
@@ -54,27 +49,76 @@ class ProductModel {
       otherOptions: json['otherOptions'] != null
           ? List<String>.from(json['otherOptions'])
           : null,
-      customizationOptions: customizationOptions,
+      haveCustomizationOption: json['haveCustomizationOption'] ?? false,
+      variantGroups: (json['variantGroups'] as List?)
+              ?.map((e) => VariantGroup.fromJson(e))
+              .toList() ??
+          [],
       isIngredient: json['isIngredient'] ?? true,
     );
   }
 
-  // Getter to check if product has customization options
+  // Helper to check if any variant group exists
   bool get hasCustomization =>
-      customizationOptions != null &&
-      (customizationOptions!.hasRoastLevels ||
-          customizationOptions!.hasGrindTypes);
+      haveCustomizationOption && variantGroups.isNotEmpty;
 
-  // Get all available options combined
-  List<String> get allCustomOptions {
-    final options = <String>[];
-    if (customizationOptions?.roastLevels != null) {
-      options.addAll(customizationOptions!.roastLevels!);
+  // Helper to get total price adjustment for selected options
+  double calculateTotalAdjustment(Map<String, VariantOption> selected) {
+    double total = 0;
+    for (var group in variantGroups) {
+      final selectedOption = selected[group.name];
+      if (selectedOption != null) {
+        total += selectedOption.priceAdjustment;
+      }
     }
-    if (customizationOptions?.grindTypes != null) {
-      options.addAll(customizationOptions!.grindTypes!);
-    }
-    return options;
+    return total;
+  }
+
+  // Final price after adding customization adjustments
+  double getFinalPrice(Map<String, VariantOption> selected) =>
+      price + calculateTotalAdjustment(selected);
+}
+
+// variant_group.dart
+
+class VariantGroup {
+  final String name;
+  final bool required;
+  final List<VariantOption> options;
+
+  VariantGroup({
+    required this.name,
+    required this.required,
+    required this.options,
+  });
+
+  factory VariantGroup.fromJson(Map<String, dynamic> json) {
+    return VariantGroup(
+      name: json['name'] ?? '',
+      required: json['required'] ?? false,
+      options: (json['options'] as List?)
+              ?.map((e) => VariantOption.fromJson(e))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+// variant_option.dart
+class VariantOption {
+  final String label;
+  final double priceAdjustment;
+
+  VariantOption({
+    required this.label,
+    required this.priceAdjustment,
+  });
+
+  factory VariantOption.fromJson(Map<String, dynamic> json) {
+    return VariantOption(
+      label: json['label'] ?? '',
+      priceAdjustment: (json['priceAdjustment'] ?? 0).toDouble(),
+    );
   }
 }
 

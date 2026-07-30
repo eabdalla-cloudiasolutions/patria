@@ -20,7 +20,9 @@ class PaymentCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-          horizontal: 16.w, vertical: 8.h), // 👈 reduced from 16
+        horizontal: 16.w,
+        vertical: 8.h,
+      ), // 👈 reduced from 16
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r), // slightly smaller radius
@@ -31,7 +33,7 @@ class PaymentCard extends StatelessWidget {
         leading: const Icon(
           Icons.credit_card,
           size: 22, // optionally smaller icon
-          color: Color(0xFF6B5E4B),
+          color: Color(0xFF3C4119),
         ),
         title: Text(
           method['cardNumber'],

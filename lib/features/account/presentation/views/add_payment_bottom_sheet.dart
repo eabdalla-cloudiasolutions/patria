@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/account/data/apis/payment_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
+import 'package:patria/features/account/data/apis/payment_api.dart';
+import 'package:patria/features/account/presentation/views/widgets/expiry_date_formatter.dart';
 
 class AddPaymentBottomSheet extends StatefulWidget {
   const AddPaymentBottomSheet({super.key});
@@ -68,7 +70,6 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
         expiryYear: expiryYear,
         isDefault: _isDefault,
       );
-
       if (!mounted) return;
       Navigator.pop(context, true);
     } catch (e) {
@@ -82,9 +83,9 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.6, // ✅ starts at 60%
-      minChildSize: 0.6, // ✅ minimum 60%
-      maxChildSize: 0.92, // ✅ expands to 92% when keyboard opens
+      initialChildSize: 0.6,
+      minChildSize: 0.6,
+      maxChildSize: 0.92,
       expand: false,
       builder: (context, scrollController) {
         return GestureDetector(
@@ -94,7 +95,7 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
               top: 16.h,
               left: 16.w,
               right: 16.w,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 32.h, // ✅
+              bottom: MediaQuery.of(context).viewInsets.bottom + 32.h,
             ),
             decoration: ShapeDecoration(
               color: Colors.white,
@@ -108,14 +109,13 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
             child: Form(
               key: _formKey,
               child: ListView(
-                // ✅ use ListView instead of SingleChildScrollView
                 controller: scrollController,
                 keyboardDismissBehavior:
                     ScrollViewKeyboardDismissBehavior.onDrag,
                 children: [
                   _buildHeader(),
                   SizedBox(height: 16.h),
-                  _buildTextField(
+                  _StyledFormField(
                     label: 'card_number'.tr(),
                     controller: _cardNumberController,
                     hint: '000 0000 0000 0000',
@@ -133,7 +133,7 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
                     },
                   ),
                   SizedBox(height: 16.h),
-                  _buildTextField(
+                  _StyledFormField(
                     label: 'cardholder_name'.tr(),
                     controller: _cardHolderController,
                     hint: 'cardholder_name_hint'.tr(),
@@ -148,25 +148,91 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
                   Row(
                     children: [
                       Expanded(
-                        child: _buildTextField(
-                          label: 'expiry_date'.tr(),
-                          controller: _expiryController,
-                          hint: 'MM/YY',
-                          keyboardType: TextInputType.datetime,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter expiry date';
-                            }
-                            if (!value.contains('/')) {
-                              return 'Format: MM/YY';
-                            }
-                            return null;
-                          },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'expiry_date'.tr(),
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 12.sp,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                            TextFormField(
+                              controller: _expiryController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                EmojiInputFormatter(),
+                                ExpiryDateFormatter(),
+                              ],
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter expiry date';
+                                }
+                                if (!value.contains('/'))
+                                  return 'Format: MM/YY';
+                                final parts = value.split('/');
+                                if (parts[0].length != 2 ||
+                                    parts[1].length != 2) {
+                                  return 'Format: MM/YY';
+                                }
+                                return null;
+                              },
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16.sp,
+                                fontFamily: 'Montserrat',
+                                fontWeight: FontWeight.w400,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'MM/YY',
+                                hintStyle: TextStyle(
+                                  color: Color(0xFF8B8B8B),
+                                  fontSize: 16.sp,
+                                  fontFamily: 'Montserrat',
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 18.w,
+                                  vertical: 14.h,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFE5E5E5),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF3C4119),
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: const BorderSide(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  borderSide: const BorderSide(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       SizedBox(width: 12.w),
                       Expanded(
-                        child: _buildTextField(
+                        child: _StyledFormField(
                           label: 'cvv'.tr(),
                           controller: _cvvController,
                           hint: 'cvv_hint'.tr(),
@@ -195,23 +261,26 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
                           height: 20.h,
                           decoration: ShapeDecoration(
                             color: _isDefault
-                                ? const Color(0xFF6B5E4B)
+                                ? const Color(0xFF3C4119)
                                 : Colors.transparent,
                             shape: RoundedRectangleBorder(
-                              side: const BorderSide(color: Color(0xFF6B5E4B)),
+                              side: const BorderSide(color: Color(0xFF3C4119)),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                           ),
                           child: _isDefault
-                              ? const Icon(Icons.check,
-                                  size: 14, color: Colors.white)
+                              ? const Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: Colors.white,
+                                )
                               : null,
                         ),
                         SizedBox(width: 8.w),
                         Text(
                           'set_as_default'.tr(),
                           style: TextStyle(
-                            color: Color(0xFF333333),
+                            color: const Color(0xFF333333),
                             fontSize: 13.sp,
                             fontFamily: 'Montserrat',
                             fontWeight: FontWeight.w600,
@@ -227,7 +296,9 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
                     Container(
                       width: double.infinity,
                       padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 12.h),
+                        horizontal: 16.w,
+                        vertical: 12.h,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFEEEE),
                         borderRadius: BorderRadius.circular(8.r),
@@ -235,8 +306,11 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline,
-                              color: Colors.red, size: 18),
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 18,
+                          ),
                           SizedBox(width: 8.w),
                           Expanded(
                             child: Text(
@@ -273,7 +347,7 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
         Text(
           'new_payment_method'.tr(),
           style: TextStyle(
-            color: Color(0xFF28293D),
+            color: const Color(0xFF28293D),
             fontSize: 16.sp,
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w500,
@@ -288,76 +362,6 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
     );
   }
 
-  Widget _buildTextField({
-    required String label,
-    required TextEditingController controller,
-    required String hint,
-    TextInputType keyboardType = TextInputType.text,
-    IconData? suffixIcon,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 12.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        SizedBox(height: 10.h),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          validator: validator,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Color(0xFF8B8B8B),
-              fontSize: 16.sp,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-            ),
-            suffixIcon: suffixIcon != null
-                ? Icon(suffixIcon, size: 20, color: const Color(0xFF8B8B8B))
-                : null,
-            contentPadding:
-                EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
-            filled: true,
-            fillColor: Colors.white,
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFFE5E5E5)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF6B5E4B)),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSaveButton() {
     return SizedBox(
       width: double.infinity,
@@ -365,9 +369,9 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : _saveCard,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6B5E4B),
+          backgroundColor: const Color(0xFF3C4119),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(5.r),
           ),
         ),
         child: _isLoading
@@ -382,6 +386,123 @@ class _AddPaymentBottomSheetState extends State<AddPaymentBottomSheet> {
                 ),
               ),
       ),
+    );
+  }
+}
+
+// ========== Styled Text Field with focus effects ==========
+class _StyledFormField extends StatefulWidget {
+  final String label;
+  final TextEditingController controller;
+  final String hint;
+  final TextInputType keyboardType;
+  final IconData? suffixIcon;
+  final bool obscureText;
+  final String? Function(String?)? validator;
+
+  const _StyledFormField({
+    required this.label,
+    required this.controller,
+    required this.hint,
+    this.keyboardType = TextInputType.text,
+    this.suffixIcon,
+    this.obscureText = false,
+    this.validator,
+  });
+
+  @override
+  State<_StyledFormField> createState() => _StyledFormFieldState();
+}
+
+class _StyledFormFieldState extends State<_StyledFormField> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isFocused = _focusNode.hasFocus;
+    final Color textColor = isFocused ? Colors.black : const Color(0xFF8B8B8B);
+    final Color hintColor = isFocused
+        ? const Color(0xFF3C4119).withOpacity(0.7)
+        : const Color(0xFF8B8B8B);
+    final Color iconColor = isFocused
+        ? const Color(0xFF3C4119)
+        : const Color(0xFF8B8B8B);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.label,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 12.sp,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        TextFormField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          keyboardType: widget.keyboardType,
+          obscureText: widget.obscureText,
+          validator: widget.validator,
+          inputFormatters: [EmojiInputFormatter()],
+          style: TextStyle(
+            color: textColor,
+            fontSize: 16.sp,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w400,
+          ),
+          decoration: InputDecoration(
+            hintText: widget.hint,
+            hintStyle: TextStyle(
+              color: hintColor,
+              fontSize: 16.sp,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+            ),
+            suffixIcon: widget.suffixIcon != null
+                ? Icon(widget.suffixIcon, size: 20, color: iconColor)
+                : null,
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 18.w,
+              vertical: 14.h,
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFFE5E5E5)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF3C4119)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -6,10 +6,7 @@ import 'package:lottie/lottie.dart';
 class OrderConfirmationCard extends StatefulWidget {
   final String orderNumber;
 
-  const OrderConfirmationCard({
-    super.key,
-    required this.orderNumber,
-  });
+  const OrderConfirmationCard({super.key, required this.orderNumber});
 
   @override
   State<OrderConfirmationCard> createState() => _OrderConfirmationCardState();
@@ -22,8 +19,12 @@ class _OrderConfirmationCardState extends State<OrderConfirmationCard> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding:
-          EdgeInsets.only(top: 12.h, left: 12.w, right: 12.w, bottom: 16.h),
+      padding: EdgeInsets.only(
+        top: 12.h,
+        left: 12.w,
+        right: 12.w,
+        bottom: 16.h,
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color(0xFFE5E5E5)),
@@ -81,7 +82,7 @@ class _OrderConfirmationCardState extends State<OrderConfirmationCard> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 8.h),
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F0EA),
+              color: const Color(0xFFE5E8D3),
               borderRadius: BorderRadius.circular(5.r),
             ),
             child: Text(

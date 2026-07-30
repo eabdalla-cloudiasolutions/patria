@@ -5,18 +5,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class OrderSummary extends StatelessWidget {
   final double subtotal;
   final double discount;
-  final double deliveryFee;
-  final double serviceFee;
+  // final double deliveryFee;
 
   const OrderSummary({
     super.key,
     required this.subtotal,
     this.discount = 0,
-    this.deliveryFee = 25.0,
-    this.serviceFee = 32.0,
+    // this.deliveryFee = 25.0,
   });
 
-  double get total => subtotal - discount + deliveryFee + serviceFee;
+  double get total => subtotal - discount;
 
   @override
   Widget build(BuildContext context) {
@@ -37,18 +35,11 @@ class OrderSummary extends StatelessWidget {
         _buildRow(context, 'subtotal'.tr(), subtotal, isBold: false),
         SizedBox(height: 10.h),
         if (discount > 0) ...[
-          _buildRow(
-            context,
-            'discount'.tr(),
-            discount,
-            isBold: false,
-            isDiscount: true,
-          ),
+          _buildRow(context, 'discount'.tr(), discount,
+              isBold: false, isDiscount: true),
           SizedBox(height: 10.h),
         ],
-        _buildRow(context, 'delivery_fee'.tr(), deliveryFee, isBold: false),
-        SizedBox(height: 10.h),
-        _buildRow(context, 'service_fee'.tr(), serviceFee, isBold: false),
+        // _buildRow(context, 'delivery_fee'.tr(), deliveryFee, isBold: false),
         SizedBox(height: 10.h),
         const Divider(color: Color(0xFFE5E5E5), height: 1),
         SizedBox(height: 10.h),
@@ -79,20 +70,17 @@ class OrderSummary extends StatelessWidget {
         Text.rich(
           TextSpan(
             children: [
-              if (!isDiscount) ...[
+              if (!isDiscount)
                 TextSpan(
                   text: 'currency'.tr(),
                   style: TextStyle(
-                    color: isDiscount
-                        ? const Color(0xFF059B5A)
-                        : const Color(0xFF515151),
+                    color: const Color(0xFF515151),
                     fontSize: 13.sp,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w400,
                     height: 1.10,
                   ),
                 ),
-              ],
               TextSpan(
                 text: isDiscount
                     ? '- ${amount.toStringAsFixed(2)}'

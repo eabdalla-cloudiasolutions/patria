@@ -1,5 +1,5 @@
 // ─── States ───────────────────────────────────────────
-import 'package:erb/features/account/data/models/payment_method_model.dart';
+import 'package:patria/features/account/data/models/payment_method_model.dart';
 
 abstract class PaymentState {}
 

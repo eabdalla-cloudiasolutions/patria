@@ -33,7 +33,7 @@ class PaymentOption extends StatelessWidget {
             side: BorderSide(
               width: isSelected ? 1.5.w : 1.w,
               color: isSelected
-                  ? const Color(0xFF6B5E4B)
+                  ? const Color(0xFF3C4119)
                   : const Color(0xFFE5E5E5),
             ),
             borderRadius: BorderRadius.circular(8.r),
@@ -52,13 +52,12 @@ class PaymentOption extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(
-                        color: const Color(0xFFE5E5E5), width: 0.6.w),
+                      color: const Color(0xFFE5E5E5),
+                      width: 0.6.w,
+                    ),
                     borderRadius: BorderRadius.circular(4.r),
                   ),
-                  child: SvgPicture.asset(
-                    image,
-                    fit: BoxFit.contain,
-                  ),
+                  child: SvgPicture.asset(image, fit: BoxFit.contain),
                 ),
                 SizedBox(width: 8.w),
 
@@ -99,10 +98,11 @@ class PaymentOption extends StatelessWidget {
               height: 20.h,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    isSelected ? const Color(0xFF6B5E4B) : Colors.transparent,
+                color: isSelected
+                    ? const Color(0xFF3C4119)
+                    : Colors.transparent,
                 border: Border.all(
-                  color: const Color(0xFF6B5E4B),
+                  color: const Color(0xFF3C4119),
                   width: 1.5.w,
                 ),
               ),

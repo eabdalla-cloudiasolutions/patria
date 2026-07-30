@@ -1,5 +1,5 @@
-// import 'package:erb/features/account/presentation/views/widgets/edit_card_form.dart';
-// import 'package:erb/features/account/presentation/views/widgets/edit_card_preview.dart';
+// import 'package:patria/features/account/presentation/views/widgets/edit_card_form.dart';
+// import 'package:patria/features/account/presentation/views/widgets/edit_card_preview.dart';
 // import 'package:easy_localization/easy_localization.dart';
 // import 'package:flutter/material.dart';
 // import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -73,7 +73,7 @@
 //             child: Text(
 //               'cancel'.tr(),
 //               style: const TextStyle(
-//                 color: Color(0xFF6B5E4B),
+//                 color: Color(0xFF3C4119),
 //                 fontFamily: 'Montserrat',
 //                 fontWeight: FontWeight.w600,
 //               ),
@@ -200,7 +200,7 @@
 //               child: ElevatedButton(
 //                 onPressed: _saveChanges,
 //                 style: ElevatedButton.styleFrom(
-//                   backgroundColor: const Color(0xFF6B5E4B),
+//                   backgroundColor: const Color(0xFF3C4119),
 //                   shape: RoundedRectangleBorder(
 //                     borderRadius: BorderRadius.circular(5),
 //                   ),

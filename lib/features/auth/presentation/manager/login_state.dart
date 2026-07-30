@@ -1,4 +1,4 @@
-import 'package:erb/features/auth/data/models/login_response_model.dart';
+import 'package:patria/features/auth/data/models/login_response_model.dart';
 
 abstract class LoginState {}
 
@@ -13,5 +13,8 @@ class LoginSuccess extends LoginState {
 
 class LoginFailure extends LoginState {
   final String error;
-  LoginFailure(this.error);
+  final int? statusCode;
+  final String? phoneNumber;
+
+  LoginFailure(this.error, {this.statusCode, this.phoneNumber});
 }

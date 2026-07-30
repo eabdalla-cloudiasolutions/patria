@@ -28,9 +28,7 @@ class DeleteButton extends StatelessWidget {
       height: height.h,
       child: GestureDetector(
         onTap: (isEnabled && !isLoading) ? onPressed : null,
-        child: Center(
-          child: _buildChild(),
-        ),
+        child: Center(child: _buildChild()),
       ),
     );
   }
@@ -51,11 +49,7 @@ class DeleteButton extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          Icons.delete_outline,
-          size: 18.sp,
-          color: const Color(0xFFC90000),
-        ),
+        Image.asset('assets/images/trash-option.png', height: 18, width: 18),
         SizedBox(width: 12.w),
         Text(
           text,

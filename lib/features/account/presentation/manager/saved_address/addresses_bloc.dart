@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/account/data/apis/addresses_api.dart';
-import 'package:erb/features/account/presentation/manager/saved_address/addresses_event.dart';
-import 'package:erb/features/account/presentation/manager/saved_address/addresses_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/account/data/apis/addresses_api.dart';
+import 'package:patria/features/account/presentation/manager/saved_address/addresses_event.dart';
+import 'package:patria/features/account/presentation/manager/saved_address/addresses_state.dart';
 
 // ─── Bloc ─────────────────────────────────────────────
 class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {

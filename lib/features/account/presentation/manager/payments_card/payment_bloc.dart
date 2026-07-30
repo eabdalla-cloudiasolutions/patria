@@ -1,10 +1,10 @@
 // ─── Bloc ─────────────────────────────────────────────
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/account/data/apis/payment_api.dart';
-import 'package:erb/features/account/presentation/manager/payments_card/payment_event.dart';
-import 'package:erb/features/account/presentation/manager/payments_card/payment_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/account/data/apis/payment_api.dart';
+import 'package:patria/features/account/presentation/manager/payments_card/payment_event.dart';
+import 'package:patria/features/account/presentation/manager/payments_card/payment_state.dart';
 
 class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   final PaymentApi _api = PaymentApi();

@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/auth/data/apis/auth_api.dart';
-import 'package:erb/features/auth/presentation/views/widgets/signIn_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
+import 'package:patria/features/auth/data/apis/auth_api.dart';
+import 'package:patria/features/auth/presentation/views/widgets/signIn_bottom_sheet.dart';
 
 class OtpVerificationBottomSheet extends StatefulWidget {
   final String phoneNumber;
@@ -20,14 +21,16 @@ class OtpVerificationBottomSheet extends StatefulWidget {
 
 class _OtpVerificationBottomSheetState
     extends State<OtpVerificationBottomSheet> {
-  final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   int _secondsRemaining = 119;
   Timer? _timer;
   bool _isLoading = false;
-  String? _errorMessage; // ✅
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -47,18 +50,35 @@ class _OtpVerificationBottomSheetState
 
   void _resendCode() {
     if (_secondsRemaining == 0) {
-      AuthApi().sendVerification(widget.phoneNumber).then((_) {
-        setState(() {
-          _secondsRemaining = 119;
-          _errorMessage = null; // ✅ clear error on resend
-        });
-        _startTimer();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('otp_resent_successfully'.tr())),
-        );
-      }).catchError((e) {
-        setState(() => _errorMessage = 'Failed to resend code. Try again.');
-      });
+      AuthApi()
+          .sendVerification(widget.phoneNumber)
+          .then((_) {
+            setState(() {
+              _secondsRemaining = 119;
+              _errorMessage = null;
+            });
+            _startTimer();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'otp_resent_successfully'.tr(),
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                backgroundColor: const Color(0xFF3C4119),
+                duration: const Duration(seconds: 2),
+                behavior:
+                    SnackBarBehavior.floating, // ✅ removes safe area space
+
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 16.h, // ✅ reduce height
+                ),
+              ),
+            );
+          })
+          .catchError((e) {
+            setState(() => _errorMessage = 'Failed to resend code. Try again.');
+          });
     }
   }
 
@@ -72,7 +92,7 @@ class _OtpVerificationBottomSheetState
 
     setState(() {
       _isLoading = true;
-      _errorMessage = null; // ✅ clear previous error
+      _errorMessage = null;
     });
 
     try {
@@ -91,7 +111,7 @@ class _OtpVerificationBottomSheetState
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _errorMessage = 'Invalid verification code'; // ✅ inline error
+        _errorMessage = 'Invalid verification code';
       });
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -140,12 +160,11 @@ class _OtpVerificationBottomSheetState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Icon
               Container(
                 width: 90.w,
                 height: 90.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EA),
+                  color: const Color(0xFFE5E8D3),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: const Color(0x194A3F33),
@@ -155,8 +174,6 @@ class _OtpVerificationBottomSheetState
                 child: Image.asset('assets/images/phone 1.png'),
               ),
               SizedBox(height: 32.h),
-
-              // Title
               Text(
                 'otp_title'.tr(),
                 textAlign: TextAlign.center,
@@ -170,8 +187,6 @@ class _OtpVerificationBottomSheetState
                 ),
               ),
               SizedBox(height: 6.h),
-
-              // Subtitle
               Text.rich(
                 TextSpan(
                   children: [
@@ -202,15 +217,28 @@ class _OtpVerificationBottomSheetState
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 32.h),
-
-              // OTP fields
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (index) => _buildOtpBox(index)),
+                children: List.generate(
+                  4,
+                  (index) => _OtpField(
+                    controller: _controllers[index],
+                    focusNode: _focusNodes[index],
+                    autofocus: index == 0,
+                    onChanged: (value) {
+                      if (_errorMessage != null) {
+                        setState(() => _errorMessage = null);
+                      }
+                      if (value.isNotEmpty && index < 3) {
+                        _focusNodes[index + 1].requestFocus();
+                      } else if (value.isEmpty && index > 0) {
+                        _focusNodes[index - 1].requestFocus();
+                      }
+                    },
+                  ),
+                ),
               ),
               SizedBox(height: 12.h),
-
-              // Resend
               GestureDetector(
                 onTap: _secondsRemaining == 0 ? _resendCode : null,
                 child: Text(
@@ -220,7 +248,7 @@ class _OtpVerificationBottomSheetState
                   style: TextStyle(
                     color: _secondsRemaining > 0
                         ? const Color(0xFF8B8B8B)
-                        : const Color(0xFF6B5E4B),
+                        : const Color(0xFF3C4119),
                     fontSize: 12.sp,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w600,
@@ -229,14 +257,14 @@ class _OtpVerificationBottomSheetState
                   ),
                 ),
               ),
-
-              // ✅ Inline error message
               if (_errorMessage != null) ...[
                 SizedBox(height: 12.h),
                 Container(
                   width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEEEE),
                     borderRadius: BorderRadius.circular(8.r),
@@ -244,8 +272,11 @@ class _OtpVerificationBottomSheetState
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 18),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 18,
+                      ),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
@@ -262,17 +293,16 @@ class _OtpVerificationBottomSheetState
                   ),
                 ),
               ],
-
               SizedBox(height: 32.h),
-
-              // Verify Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _verifyOtp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B5E4B),
+                  backgroundColor: const Color(0xFF3C4119),
                   minimumSize: Size(double.infinity, 56.h),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 30.w, vertical: 16.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 30.w,
+                    vertical: 16.h,
+                  ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.r),
@@ -298,19 +328,67 @@ class _OtpVerificationBottomSheetState
       ),
     );
   }
+}
 
-  Widget _buildOtpBox(int index) {
+// ========== Focus‑aware OTP Field ==========
+class _OtpField extends StatefulWidget {
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool autofocus;
+  final Function(String) onChanged;
+
+  const _OtpField({
+    required this.controller,
+    required this.focusNode,
+    this.autofocus = false,
+    required this.onChanged,
+  });
+
+  @override
+  State<_OtpField> createState() => _OtpFieldState();
+}
+
+class _OtpFieldState extends State<_OtpField> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = widget.focusNode;
+    _focusNode.addListener(() => setState(() {}));
+    if (widget.autofocus) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _focusNode.requestFocus();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // focus node is disposed by parent
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isFocused = _focusNode.hasFocus;
+    final Color fillColor = isFocused ? Colors.white : const Color(0xFFE5E5E5);
+    final Color borderColor = isFocused
+        ? const Color(0xFF3C4119)
+        : const Color(0xFFE5E5E5);
+    final double borderWidth = 1.5.w;
+
     return Container(
       width: 65.w,
       height: 75.h,
       margin: EdgeInsets.symmetric(horizontal: 6.w),
       child: TextField(
-        controller: _controllers[index],
-        focusNode: _focusNodes[index],
-        autofocus: index == 0,
+        controller: widget.controller,
+        focusNode: _focusNode,
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         maxLength: 1,
+        inputFormatters: [EmojiInputFormatter()],
         style: TextStyle(
           fontSize: 24.sp,
           fontFamily: 'Montserrat',
@@ -320,27 +398,17 @@ class _OtpVerificationBottomSheetState
         decoration: InputDecoration(
           counterText: '',
           filled: true,
-          fillColor: const Color(0xFFE5E5E5),
+          fillColor: fillColor,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(width: 1.5.w, color: Color(0xFFE5E5E5)),
+            borderSide: BorderSide(width: borderWidth, color: borderColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(width: 1.5.w, color: Color(0xFF6B5E4B)),
+            borderSide: const BorderSide(width: 1.5, color: Color(0xFF3C4119)),
           ),
         ),
-        onChanged: (value) {
-          // ✅ clear error when user starts typing
-          if (_errorMessage != null) {
-            setState(() => _errorMessage = null);
-          }
-          if (value.isNotEmpty && index < 3) {
-            _focusNodes[index + 1].requestFocus();
-          } else if (value.isEmpty && index > 0) {
-            _focusNodes[index - 1].requestFocus();
-          }
-        },
+        onChanged: widget.onChanged,
       ),
     );
   }

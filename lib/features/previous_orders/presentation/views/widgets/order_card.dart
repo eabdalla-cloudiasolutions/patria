@@ -1,7 +1,7 @@
-import 'package:erb/features/previous_orders/presentation/views/widgets/already_rated_row.dart';
-import 'package:erb/features/previous_orders/presentation/views/widgets/rating_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/previous_orders/presentation/views/widgets/already_rated_row.dart';
+import 'package:patria/features/previous_orders/presentation/views/widgets/rating_row.dart';
 
 import 'order_card_actions.dart';
 import 'order_card_header.dart';

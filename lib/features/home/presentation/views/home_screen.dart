@@ -1,23 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/widgets/safe_network_image.dart';
-import 'package:erb/features/cart/presentation/manager/cart_bloc.dart';
-import 'package:erb/features/cart/presentation/manager/cart_event.dart';
-import 'package:erb/features/home/data/models/product_model.dart';
-import 'package:erb/features/home/data/repos/favorites_repo.dart';
-import 'package:erb/features/home/data/repos/products_repo.dart';
-import 'package:erb/features/home/presentation/manager/categories_bloc.dart';
-import 'package:erb/features/home/presentation/manager/categories_event.dart';
-import 'package:erb/features/home/presentation/manager/categories_state.dart';
-import 'package:erb/features/home/presentation/manager/favorites_bloc.dart';
-import 'package:erb/features/home/presentation/manager/favorites_event.dart';
-import 'package:erb/features/home/presentation/manager/favorites_state.dart';
-import 'package:erb/features/home/presentation/manager/products_bloc.dart';
-import 'package:erb/features/home/presentation/manager/products_event.dart';
-import 'package:erb/features/home/presentation/manager/products_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/widgets/safe_network_image.dart';
+import 'package:patria/features/cart/presentation/manager/cart_bloc.dart';
+import 'package:patria/features/cart/presentation/manager/cart_event.dart';
+import 'package:patria/features/cart/presentation/manager/cart_state.dart';
+import 'package:patria/features/home/data/models/product_model.dart';
+import 'package:patria/features/home/data/repos/favorites_repo.dart';
+import 'package:patria/features/home/data/repos/products_repo.dart';
+import 'package:patria/features/home/presentation/manager/categories_bloc.dart';
+import 'package:patria/features/home/presentation/manager/categories_event.dart';
+import 'package:patria/features/home/presentation/manager/categories_state.dart';
+import 'package:patria/features/home/presentation/manager/favorites_bloc.dart';
+import 'package:patria/features/home/presentation/manager/favorites_event.dart';
+import 'package:patria/features/home/presentation/manager/favorites_state.dart';
+import 'package:patria/features/home/presentation/manager/products_bloc.dart';
+import 'package:patria/features/home/presentation/manager/products_event.dart';
+import 'package:patria/features/home/presentation/manager/products_state.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'widgets/home_banner_slider.dart';
@@ -44,34 +45,78 @@ class _HomeState extends State<Home> {
           create: (_) => ProductsBloc(ProductsRepo())..add(LoadProducts()),
         ),
         BlocProvider(
-          create: (_) => FavoritesBloc(favoritesRepo: FavoritesRepo())
-            ..add(FetchFavorites()),
+          create: (_) =>
+              FavoritesBloc(favoritesRepo: FavoritesRepo())
+                ..add(FetchFavorites()),
         ),
       ],
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF7F7F7),
-        body: SafeArea(
-          bottom: false,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 24.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16.h),
-                  HomeHeader(),
-                  SizedBox(height: 16.h),
-                  const HomeSearchBar(),
-                  SizedBox(height: 16.h),
-                  const HomeBannerSlider(),
-                  SizedBox(height: 18.h),
-                  _buildSectionTitle('home_categories'.tr()),
-                  SizedBox(height: 12.h),
-                  _buildCategoriesRow(),
-                  SizedBox(height: 32.h),
-                  _buildProductsGrid(),
-                  SizedBox(height: 6.h),
-                ],
+      // ✅ React to the REAL result of the add-to-cart request.
+      // CartBloc is provided globally (main.dart), so we can listen here.
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<CartBloc, CartState>(
+            // Only react when WE triggered an add from this screen, and only to
+            // terminal states (ignore the intermediate CartLoading).
+            listenWhen: (prev, curr) =>
+                _addingToCartIds.isNotEmpty &&
+                (curr is CartLoaded || curr is CartError),
+            listener: (context, state) {
+              if (state is CartLoaded) {
+                _showCartSnack(
+                  'item_added_to_cart'.tr(),
+                  const Color(0xFF3C4119),
+                );
+              } else if (state is CartError) {
+                // ✅ Show the exact message that came from the API.
+                // ApiErrorHandler already extracts response['message'],
+                // so for a 401 this shows e.g. "Not authorized, no token".
+                _showCartSnack(state.message, const Color(0xFFC90000));
+              }
+
+              // ✅ Clear the loading state for the card(s) once we have a result.
+              if (mounted) {
+                setState(() => _addingToCartIds.clear());
+              }
+            },
+          ),
+          // ✅ Surface the backend message when a favorite add/remove fails
+          // (e.g. 401 "غير مصرح — لا يوجد رمز مصادقة"). FavoritesBloc restores
+          // FavoritesLoaded right after FavoritesError, so the builder below
+          // never sees the error state — this listener is what surfaces it.
+          BlocListener<FavoritesBloc, FavoritesState>(
+            listenWhen: (prev, curr) => curr is FavoritesError,
+            listener: (context, state) {
+              if (state is FavoritesError) {
+                _showCartSnack(state.message, const Color(0xFFC90000));
+              }
+            },
+          ),
+        ],
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF7F7F7),
+          body: SafeArea(
+            bottom: false,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 24.h),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16.h),
+                    HomeHeader(),
+                    SizedBox(height: 16.h),
+                    const HomeSearchBar(),
+                    SizedBox(height: 16.h),
+                    const HomeBannerSlider(),
+                    SizedBox(height: 18.h),
+                    _buildSectionTitle('home_categories'.tr()),
+                    SizedBox(height: 12.h),
+                    _buildCategoriesRow(),
+                    SizedBox(height: 32.h),
+                    _buildProductsGrid(),
+                    SizedBox(height: 6.h),
+                  ],
+                ),
               ),
             ),
           ),
@@ -125,8 +170,10 @@ class _HomeState extends State<Home> {
             return SizedBox(
               height: 100.h,
               child: Center(
-                child: Text(state.message,
-                    style: TextStyle(color: Colors.red, fontSize: 12.sp)),
+                child: Text(
+                  state.message,
+                  style: TextStyle(color: Colors.red, fontSize: 12.sp),
+                ),
               ),
             );
           }
@@ -147,8 +194,8 @@ class _HomeState extends State<Home> {
                     onTap: () {
                       setState(() => _selectedFilter = category.id);
                       context.read<ProductsBloc>().add(
-                            LoadProducts(category: category.name),
-                          );
+                        LoadProducts(category: category.name),
+                      );
                     },
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(100.r),
@@ -171,17 +218,30 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           Positioned(
-                            bottom: 8.h,
+                            bottom: 20.h,
                             left: 0,
                             right: 0,
-                            child: Text(
-                              category.name,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13.sp,
-                                fontFamily: 'Montserrat',
-                                fontWeight: FontWeight.w700,
+                            child: SizedBox(
+                              height: 40.h, // ← fixed height fits 2 lines
+                              child: Align(
+                                alignment: Alignment
+                                    .topCenter, // ← text starts from top of this box
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 6.w,
+                                  ),
+                                  child: Text(
+                                    category.name,
+                                    maxLines: 2,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13.sp,
+                                      fontFamily: 'Montserrat',
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -212,13 +272,18 @@ class _HomeState extends State<Home> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline,
-                    size: 48, color: Color(0xFFCACBD4)),
+                const Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: Color(0xFFCACBD4),
+                ),
                 SizedBox(height: 12.h),
                 Text(
                   state.message,
                   style: TextStyle(
-                      color: const Color(0xFF8B8B8B), fontSize: 14.sp),
+                    color: const Color(0xFF8B8B8B),
+                    fontSize: 14.sp,
+                  ),
                 ),
                 SizedBox(height: 12.h),
                 ElevatedButton(
@@ -275,15 +340,15 @@ class _HomeState extends State<Home> {
                   final isFav = favoriteIds.contains(product.id);
                   final isFavActionLoading =
                       favState is FavoritesActionLoading &&
-                          favState.productId == product.id;
+                      favState.productId == product.id;
                   final isAddingToCart = _addingToCartIds.contains(product.id);
 
                   return GestureDetector(
                     onTap: () {
-                      Navigator.of(context, rootNavigator: true).pushNamed(
-                        Routes.itemPreview,
-                        arguments: product,
-                      );
+                      Navigator.of(
+                        context,
+                        rootNavigator: true,
+                      ).pushNamed(Routes.itemPreview, arguments: product);
                     },
                     child: HomeProductCard(
                       name: product.name,
@@ -294,19 +359,19 @@ class _HomeState extends State<Home> {
                       isAddingToCart: isAddingToCart,
                       onFavTap: () {
                         context.read<FavoritesBloc>().add(
-                              ToggleFavorite(
-                                productId: product.id,
-                                isCurrentlyFavorite: isFav,
-                              ),
-                            );
+                          ToggleFavorite(
+                            productId: product.id,
+                            isCurrentlyFavorite: isFav,
+                          ),
+                        );
                       },
                       onAddTap: () {
-                        if (product.isIngredient) {
+                        if (product.haveCustomizationOption) {
                           // Ingredient: navigate to item preview
-                          Navigator.of(context, rootNavigator: true).pushNamed(
-                            Routes.itemPreview,
-                            arguments: product,
-                          );
+                          Navigator.of(
+                            context,
+                            rootNavigator: true,
+                          ).pushNamed(Routes.itemPreview, arguments: product);
                         } else {
                           // Add to cart
                           _addToCart(product);
@@ -314,7 +379,7 @@ class _HomeState extends State<Home> {
                       },
                       rate: product.rate,
                       reviewCount: product.reviewCount,
-                      isIngredient: product.isIngredient,
+                      isIngredient: product.haveCustomizationOption,
                     ),
                   );
                 },
@@ -328,57 +393,34 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Future<void> _addToCart(ProductModel product) async {
+  // ✅ Just dispatch the event. Success/failure is handled by the
+  // BlocListener above, based on what the bloc actually emits.
+  void _addToCart(ProductModel product) {
     if (_addingToCartIds.contains(product.id)) return;
 
-    setState(() {
-      _addingToCartIds.add(product.id);
-    });
+    setState(() => _addingToCartIds.add(product.id));
 
-    try {
-      final cartBloc = context.read<CartBloc>();
-      cartBloc.add(AddToCart(
-        productId: product.id,
-        quantity: 1,
-      ));
+    context.read<CartBloc>().add(AddToCart(productId: product.id, quantity: 1));
+  }
 
-      // Wait for the cart to be updated (optional, you can rely on bloc listener)
-      // We'll navigate after a short delay to ensure the cart is added.
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+  // ✅ Shared snackbar helper.
+  void _showCartSnack(String message, Color color, {SnackBarAction? action}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
         SnackBar(
-          content: Text('item_added_to_cart'.tr()),
-          backgroundColor: const Color(0xFF059B5A),
+          content: Text(
+            message,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: color,
           duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          action: action,
         ),
       );
-
-      // Navigate to cart screen
-      // PersistentNavBarNavigator.pushNewScreen(
-      //   context,
-      //   screen: CartScreen(
-      //     controller: null, // or pass the controller if available
-      //     fromNav: false,
-      //     myTabIndex: 1, // adjust to your cart tab index
-      //   ),
-      //   withNavBar: true,
-      //   pageTransitionAnimation: PageTransitionAnimation.cupertino,
-      // );
-    } catch (e) {
-      print('Add to cart error: $e'); // 👈 see what the real error is
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('add_to_cart_failed'.tr())),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _addingToCartIds.remove(product.id);
-        });
-      }
-    }
   }
 }
 

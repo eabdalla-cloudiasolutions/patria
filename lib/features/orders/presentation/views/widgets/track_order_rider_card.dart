@@ -6,10 +6,7 @@ import 'package:flutter_svg/svg.dart';
 class TrackOrderRiderCard extends StatelessWidget {
   final String riderName;
 
-  const TrackOrderRiderCard({
-    super.key,
-    required this.riderName,
-  });
+  const TrackOrderRiderCard({super.key, required this.riderName});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +37,7 @@ class TrackOrderRiderCard extends StatelessWidget {
                 'assets/images/Object [Vectorized].svg',
                 width: 44.w,
                 height: 44.h,
-                color: const Color(0xFF6B5E4B), // Applies color to the SVG
+                color: const Color(0xFF3C4119), // Applies color to the SVG
               ),
               SizedBox(width: 16.w),
               Expanded(
@@ -86,10 +83,10 @@ class TrackOrderRiderCard extends StatelessWidget {
       width: 40.w,
       height: 40.h,
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F0EA),
+        color: const Color(0xFFE5E8D3),
         borderRadius: BorderRadius.circular(8.r),
       ),
-      child: Icon(icon, color: const Color(0xFF6B5E4B), size: 20),
+      child: Icon(icon, color: const Color(0xFF3C4119), size: 20),
     );
   }
 }

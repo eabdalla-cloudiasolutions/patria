@@ -1,17 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/widgets/empty_state_widget.dart';
-import 'package:erb/core/widgets/safe_network_image.dart';
-import 'package:erb/features/home/data/models/favorite_product_model.dart';
-import 'package:erb/features/home/data/repos/favorites_repo.dart';
-import 'package:erb/features/home/data/repos/products_repo.dart';
-import 'package:erb/features/home/presentation/manager/favorites_bloc.dart';
-import 'package:erb/features/home/presentation/manager/favorites_event.dart';
-import 'package:erb/features/home/presentation/manager/favorites_state.dart';
-import 'package:erb/features/home/presentation/views/widgets/favourites_search_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/widgets/empty_state_widget.dart';
+import 'package:patria/core/widgets/safe_network_image.dart';
+import 'package:patria/features/home/data/models/favorite_product_model.dart';
+import 'package:patria/features/home/data/repos/favorites_repo.dart';
+import 'package:patria/features/home/data/repos/products_repo.dart';
+import 'package:patria/features/home/presentation/manager/favorites_bloc.dart';
+import 'package:patria/features/home/presentation/manager/favorites_event.dart';
+import 'package:patria/features/home/presentation/manager/favorites_state.dart';
+import 'package:patria/features/home/presentation/views/widgets/favourites_search_delegate.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -34,8 +34,10 @@ class FavouritesScreen extends StatelessWidget {
                 children: [
                   // Header (always visible)
                   Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.w,
+                      vertical: 12.h,
+                    ),
                     child: Row(
                       children: [
                         GestureDetector(
@@ -82,14 +84,19 @@ class FavouritesScreen extends StatelessWidget {
                             color: Colors.white,
                             shape: RoundedRectangleBorder(
                               side: const BorderSide(
-                                  width: 1, color: Color(0xFFCACBD4)),
+                                width: 1,
+                                color: Color(0xFFCACBD4),
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.search,
-                                  color: Color(0xFF8B8B8B), size: 20),
+                              const Icon(
+                                Icons.search,
+                                color: Color(0xFF8B8B8B),
+                                size: 20,
+                              ),
                               SizedBox(width: 10.w),
                               Text(
                                 'search_favourites_hint'.tr(),
@@ -111,9 +118,7 @@ class FavouritesScreen extends StatelessWidget {
                     SizedBox(height: 18.h),
 
                   // Content area (changes based on state)
-                  Expanded(
-                    child: _buildContent(state, context),
-                  ),
+                  Expanded(child: _buildContent(state, context)),
                 ],
               );
             },
@@ -162,7 +167,7 @@ class FavouritesScreen extends StatelessWidget {
                 context.read<FavoritesBloc>().add(FetchFavorites());
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6B5E4B),
+                backgroundColor: const Color(0xFF3C4119),
               ),
               child: Text('retry'.tr()),
             ),
@@ -205,11 +210,11 @@ class FavouritesScreen extends StatelessWidget {
               favoriteItem: favoriteItem,
               onFavTap: () {
                 context.read<FavoritesBloc>().add(
-                      ToggleFavorite(
-                        productId: favoriteItem.id,
-                        isCurrentlyFavorite: true,
-                      ),
-                    );
+                  ToggleFavorite(
+                    productId: favoriteItem.id,
+                    isCurrentlyFavorite: true,
+                  ),
+                );
               },
             );
           },
@@ -300,28 +305,26 @@ class ProductCard extends StatelessWidget {
   final FavoriteProductModel favoriteItem;
   final VoidCallback? onFavTap;
 
-  const ProductCard({
-    super.key,
-    required this.favoriteItem,
-    this.onFavTap,
-  });
+  const ProductCard({super.key, required this.favoriteItem, this.onFavTap});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FavoritesBloc, FavoritesState>(
       builder: (context, state) {
-        final isActionLoading = state is FavoritesActionLoading &&
+        final isActionLoading =
+            state is FavoritesActionLoading &&
             state.productId == favoriteItem.id;
 
         return GestureDetector(
           onTap: () async {
-            final fullProduct =
-                await ProductsRepo().getProductById(favoriteItem.id);
+            final fullProduct = await ProductsRepo().getProductById(
+              favoriteItem.id,
+            );
             if (context.mounted) {
-              Navigator.of(context, rootNavigator: true).pushNamed(
-                Routes.itemPreview,
-                arguments: fullProduct,
-              );
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).pushNamed(Routes.itemPreview, arguments: fullProduct);
             }
           },
           child: Column(
@@ -369,8 +372,11 @@ class ProductCard extends StatelessWidget {
                                     color: Colors.red,
                                   ),
                                 )
-                              : const Icon(Icons.favorite,
-                                  color: Colors.red, size: 14),
+                              : const Icon(
+                                  Icons.favorite,
+                                  color: Colors.red,
+                                  size: 14,
+                                ),
                         ),
                       ),
                     ),
@@ -381,8 +387,10 @@ class ProductCard extends StatelessWidget {
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: const ShapeDecoration(
                     color: Colors.white,
                     shape: RoundedRectangleBorder(
@@ -412,8 +420,11 @@ class ProductCard extends StatelessWidget {
                       SizedBox(height: 4.h),
                       Row(
                         children: [
-                          const Icon(Icons.star,
-                              color: Color(0xFFFFB800), size: 12),
+                          const Icon(
+                            Icons.star,
+                            color: Color(0xFFFFB800),
+                            size: 12,
+                          ),
                           SizedBox(width: 2.w),
                           Text(
                             favoriteItem.rate,
@@ -467,7 +478,7 @@ class ProductCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: ShapeDecoration(
-                              color: const Color(0xFF6B5E4B),
+                              color: const Color(0xFF3C4119),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5.71),
                               ),

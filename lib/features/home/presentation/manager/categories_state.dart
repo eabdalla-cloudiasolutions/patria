@@ -1,4 +1,4 @@
-import 'package:erb/features/home/data/models/category_model.dart';
+import 'package:patria/features/home/data/models/category_model.dart';
 
 abstract class CategoriesState {}
 

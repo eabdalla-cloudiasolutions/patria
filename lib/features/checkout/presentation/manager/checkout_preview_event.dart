@@ -1,16 +1,16 @@
-abstract class CheckoutPreviewEvent {}
+abstract class CheckoutPreviewEvent {
+  const CheckoutPreviewEvent();
+}
 
 class FetchCheckoutPreview extends CheckoutPreviewEvent {
   final double subtotal;
   final double deliveryFee;
-  final double serviceFee;
   final double couponDiscount;
   final int pointsToRedeem;
 
-  FetchCheckoutPreview({
+  const FetchCheckoutPreview({
     required this.subtotal,
     required this.deliveryFee,
-    required this.serviceFee,
     this.couponDiscount = 0,
     this.pointsToRedeem = 0,
   });

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_client.dart';
-import 'package:erb/core/network/api_endpoints.dart';
-import 'package:erb/core/services/user_service.dart';
+import 'package:patria/core/network/api_client.dart';
+import 'package:patria/core/network/api_endpoints.dart';
+import 'package:patria/core/services/user_service.dart';
 
 class ProductsApi {
   final Dio _dio = ApiClient.instance;
@@ -43,10 +43,7 @@ class ProductsApi {
 
     print('🔍 Query params sent: $queryParams');
 
-    return await _dio.get(
-      ApiEndpoints.products,
-      queryParameters: queryParams,
-    );
+    return await _dio.get(ApiEndpoints.products, queryParameters: queryParams);
   }
 
   Future<Response> getCategories() async {

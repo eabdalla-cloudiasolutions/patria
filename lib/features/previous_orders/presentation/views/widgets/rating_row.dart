@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/previous_orders/presentation/views/widgets/rate_order_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/previous_orders/presentation/views/widgets/rate_order_screen.dart';
 
 class OrderRatingRow extends StatelessWidget {
   final String orderId;
@@ -9,7 +9,7 @@ class OrderRatingRow extends StatelessWidget {
   final String productImage;
   final String productName;
   final Function(int newRating)
-      onRatingChanged; // callback to update UI after return
+  onRatingChanged; // callback to update UI after return
 
   const OrderRatingRow({
     super.key,

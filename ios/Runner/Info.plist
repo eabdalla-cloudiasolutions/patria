@@ -4,27 +4,20 @@
 	<dict>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
-		<key>NSAppTransportSecurity</key>
-		<dict>
-			<key>NSAllowsArbitraryLoads</key>
-			<true/>
-		</dict>
-		<key>NSUserNotificationsUsageDescription</key>
-		<string>We need to send you order updates and promotional offers</string>
-		<key>FirebaseAppDelegateProxyEnabled</key>
-		<true/>
+		<key>GoogleMapsAPIKey</key>
+		<string>$(GOOGLE_MAPS_API_KEY)</string>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>ERB</string>
+		<string>Patria</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
-		<string>com.cloudiasolutions.erb</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>erb</string>
+		<string>Patria</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -38,7 +31,8 @@
 				<string>Editor</string>
 				<key>CFBundleURLSchemes</key>
 				<array>
-					<string>com.googleusercontent.apps.920170611908-tb458rvs27i61lafg09rg4st00vvtcu1</string>
+					<!-- ✅ Patria iOS Google client ID -->
+					<string>com.googleusercontent.apps.772774284221-s3bnl8ant2cc8fvtneeqpaqf4vnjhggf</string>
 				</array>
 			</dict>
 			<dict>
@@ -57,7 +51,9 @@
 		<key>FacebookClientToken</key>
 		<string>9a42ce68e9afae7b304ffdb7fa01b4cc</string>
 		<key>FacebookDisplayName</key>
-		<string>ERB</string>
+		<string>Patria</string>
+		<key>FirebaseAppDelegateProxyEnabled</key>
+		<true/>
 		<key>LSApplicationQueriesSchemes</key>
 		<array>
 			<string>whatsapp</string>
@@ -70,8 +66,20 @@
 		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true/>
+		</dict>
+		<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+		<dict>
+			<key>YourPurposeKey</key>
+			<string>Patria requires temporary access to the device's precise location.</string>
+		</dict>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>We need your location to show nearby restaurants.</string>
+		<string>Patria needs your location to show nearby restaurants and estimate delivery times.</string>
+		<key>NSUserNotificationsUsageDescription</key>
+		<string>Patria needs to send you order updates and promotional offers.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIBackgroundModes</key>

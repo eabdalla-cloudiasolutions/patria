@@ -1,17 +1,15 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/auth/data/apis/auth_api.dart';
-import 'package:erb/features/auth/presentation/views/widgets/new_password_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
+import 'package:patria/features/auth/data/apis/auth_api.dart';
+import 'package:patria/features/auth/presentation/views/widgets/new_password_bottom_sheet.dart';
 
 class ForgotPasswordOtpBottomSheet extends StatefulWidget {
   final String phoneNumber;
-  const ForgotPasswordOtpBottomSheet({
-    super.key,
-    required this.phoneNumber,
-  });
+  const ForgotPasswordOtpBottomSheet({super.key, required this.phoneNumber});
 
   @override
   State<ForgotPasswordOtpBottomSheet> createState() =>
@@ -20,8 +18,10 @@ class ForgotPasswordOtpBottomSheet extends StatefulWidget {
 
 class _ForgotPasswordOtpBottomSheetState
     extends State<ForgotPasswordOtpBottomSheet> {
-  final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   int _secondsRemaining = 119;
@@ -47,18 +47,35 @@ class _ForgotPasswordOtpBottomSheetState
 
   void _resendCode() {
     if (_secondsRemaining == 0) {
-      AuthApi().forgotPassword(widget.phoneNumber).then((_) {
-        setState(() {
-          _secondsRemaining = 119;
-          _errorMessage = null;
-        });
-        _startTimer();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('otp_resent_successfully'.tr())),
-        );
-      }).catchError((e) {
-        setState(() => _errorMessage = 'failed_to_resend_code'.tr());
-      });
+      AuthApi()
+          .forgotPassword(widget.phoneNumber)
+          .then((_) {
+            setState(() {
+              _secondsRemaining = 119;
+              _errorMessage = null;
+            });
+            _startTimer();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'otp_resent_successfully'.tr(),
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                backgroundColor: const Color(0xFF3C4119),
+                duration: const Duration(seconds: 2),
+                behavior:
+                    SnackBarBehavior.floating, // ✅ removes safe area space
+
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: 16.h, // ✅ reduce height
+                ),
+              ),
+            );
+          })
+          .catchError((e) {
+            setState(() => _errorMessage = 'failed_to_resend_code'.tr());
+          });
     }
   }
 
@@ -70,8 +87,6 @@ class _ForgotPasswordOtpBottomSheetState
       return;
     }
 
-    // ✅ Just pass phone + code to NewPasswordBottomSheet
-    // No API call here — reset API combines OTP + new password
     final navigator = Navigator.of(context);
     navigator.pop();
     showModalBottomSheet(
@@ -79,10 +94,8 @@ class _ForgotPasswordOtpBottomSheetState
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useRootNavigator: true,
-      builder: (_) => NewPasswordBottomSheet(
-        phoneNumber: widget.phoneNumber,
-        otpCode: otp, // ✅ pass code
-      ),
+      builder: (_) =>
+          NewPasswordBottomSheet(phoneNumber: widget.phoneNumber, otpCode: otp),
     );
   }
 
@@ -114,7 +127,7 @@ class _ForgotPasswordOtpBottomSheetState
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 32.h),
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
-          color: Color(0xFFFAFAF7),
+          color: const Color(0xFFFAFAF7),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30.r),
@@ -132,7 +145,7 @@ class _ForgotPasswordOtpBottomSheetState
                 width: 90.w,
                 height: 90.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EA),
+                  color: const Color(0xFFE5E8D3),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: const Color(0x194A3F33),
@@ -161,7 +174,7 @@ class _ForgotPasswordOtpBottomSheetState
                     TextSpan(
                       text: 'otp_subtitle'.tr(),
                       style: TextStyle(
-                        color: Color(0xFF515151),
+                        color: const Color(0xFF515151),
                         fontSize: 16.sp,
                         fontFamily: 'Montserrat',
                         fontWeight: FontWeight.w400,
@@ -187,7 +200,23 @@ class _ForgotPasswordOtpBottomSheetState
               SizedBox(height: 32.h),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(4, (index) => _buildOtpBox(index)),
+                children: List.generate(
+                  4,
+                  (index) => _OtpField(
+                    controller: _controllers[index],
+                    focusNode: _focusNodes[index],
+                    onChanged: (value) {
+                      if (_errorMessage != null) {
+                        setState(() => _errorMessage = null);
+                      }
+                      if (value.isNotEmpty && index < 3) {
+                        _focusNodes[index + 1].requestFocus();
+                      } else if (value.isEmpty && index > 0) {
+                        _focusNodes[index - 1].requestFocus();
+                      }
+                    },
+                  ),
+                ),
               ),
               SizedBox(height: 12.h),
               GestureDetector(
@@ -199,7 +228,7 @@ class _ForgotPasswordOtpBottomSheetState
                   style: TextStyle(
                     color: _secondsRemaining > 0
                         ? const Color(0xFF8B8B8B)
-                        : const Color(0xFF6B5E4B),
+                        : const Color(0xFF3C4119),
                     fontSize: 12.sp,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w600,
@@ -212,8 +241,10 @@ class _ForgotPasswordOtpBottomSheetState
                 SizedBox(height: 12.h),
                 Container(
                   width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEEEE),
                     borderRadius: BorderRadius.circular(8.r),
@@ -221,8 +252,11 @@ class _ForgotPasswordOtpBottomSheetState
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 18),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 18,
+                      ),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
@@ -243,10 +277,12 @@ class _ForgotPasswordOtpBottomSheetState
               ElevatedButton(
                 onPressed: _isLoading ? null : _verifyOtp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B5E4B),
+                  backgroundColor: const Color(0xFF3C4119),
                   minimumSize: Size(double.infinity, 56.h),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 30.w, vertical: 16.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 30.w,
+                    vertical: 16.h,
+                  ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.r),
@@ -272,19 +308,61 @@ class _ForgotPasswordOtpBottomSheetState
       ),
     );
   }
+}
 
-  Widget _buildOtpBox(int index) {
+// ========== Focus‑aware OTP Field ==========
+class _OtpField extends StatefulWidget {
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final Function(String) onChanged;
+
+  const _OtpField({
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+  });
+
+  @override
+  State<_OtpField> createState() => _OtpFieldState();
+}
+
+class _OtpFieldState extends State<_OtpField> {
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = widget.focusNode;
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    // focus node is disposed by parent
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isFocused = _focusNode.hasFocus;
+    final Color fillColor = isFocused ? Colors.white : const Color(0xFFE5E5E5);
+    final Color borderColor = isFocused
+        ? const Color(0xFF3C4119)
+        : const Color(0xFFE5E5E5);
+    final double borderWidth = isFocused ? 1.5.w : 1.5.w;
+
     return Container(
       width: 65.w,
       height: 75.h,
       margin: EdgeInsets.symmetric(horizontal: 6.w),
       child: TextField(
-        controller: _controllers[index],
-        focusNode: _focusNodes[index],
-        autofocus: index == 0,
+        controller: widget.controller,
+        focusNode: _focusNode,
+        autofocus: false,
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         maxLength: 1,
+        inputFormatters: [EmojiInputFormatter()],
         style: TextStyle(
           fontSize: 24.sp,
           fontFamily: 'Montserrat',
@@ -294,26 +372,20 @@ class _ForgotPasswordOtpBottomSheetState
         decoration: InputDecoration(
           counterText: '',
           filled: true,
-          fillColor: const Color(0xFFE5E5E5),
+          fillColor: fillColor,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(width: 1.5.w, color: Color(0xFFE5E5E5)),
+            borderSide: BorderSide(width: borderWidth, color: borderColor),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.r),
-            borderSide: BorderSide(width: 1.5.w, color: Color(0xFF6B5E4B)),
+            borderSide: BorderSide(
+              width: borderWidth,
+              color: const Color(0xFF3C4119),
+            ),
           ),
         ),
-        onChanged: (value) {
-          if (_errorMessage != null) {
-            setState(() => _errorMessage = null);
-          }
-          if (value.isNotEmpty && index < 3) {
-            _focusNodes[index + 1].requestFocus();
-          } else if (value.isEmpty && index > 0) {
-            _focusNodes[index - 1].requestFocus();
-          }
-        },
+        onChanged: widget.onChanged,
       ),
     );
   }

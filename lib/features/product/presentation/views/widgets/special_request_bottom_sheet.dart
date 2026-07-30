@@ -1,15 +1,20 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
 
 class SpecialRequestBottomSheet extends StatefulWidget {
   final String? initialText;
   final Function(String) onContinue;
+  final String? title;
+  final String? hint;
 
   const SpecialRequestBottomSheet({
     super.key,
     this.initialText,
     required this.onContinue,
+    this.title,
+    this.hint,
   });
 
   @override
@@ -19,21 +24,38 @@ class SpecialRequestBottomSheet extends StatefulWidget {
 
 class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialText ?? '');
+    _focusNode = FocusNode();
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = const Color(0xFF3C4119);
+    final textColor = _isFocused ? Colors.black : const Color(0xFF333333);
+    final hintColor = _isFocused
+        ? accentColor.withOpacity(0.7)
+        : const Color(0xFF8B8B8B);
+    final borderColor = _isFocused ? accentColor : const Color(0xFFCACBD4);
+    final borderWidth = _isFocused ? 1.5.w : 1.w;
+
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -75,7 +97,7 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'special_request_title'.tr(),
+                  widget.title ?? 'special_request_title'.tr(),
                   style: TextStyle(
                     color: const Color(0xFF333333),
                     fontSize: 18.sp,
@@ -97,20 +119,22 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
 
             SizedBox(height: 12.h),
 
-            // Text field
+            // Focus‑aware TextField
             TextField(
               controller: _controller,
+              focusNode: _focusNode,
               maxLines: 3,
+              inputFormatters: [EmojiInputFormatter()],
               style: TextStyle(
-                color: const Color(0xFF333333),
+                color: textColor,
                 fontSize: 16.sp,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w400,
               ),
               decoration: InputDecoration(
-                hintText: 'special_request_hint'.tr(),
+                hintText: widget.hint ?? 'special_request_hint'.tr(),
                 hintStyle: TextStyle(
-                  color: const Color(0xFF8B8B8B),
+                  color: hintColor,
                   fontSize: 16.sp,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w400,
@@ -120,15 +144,15 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
                   borderSide: BorderSide(
-                    width: 1.w,
-                    color: const Color(0xFFCACBD4),
+                    width: borderWidth,
+                    color: borderColor,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(
-                    width: 1.w,
-                    color: const Color(0xFF6B5E4B),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF3C4119),
+                    width: 1.5,
                   ),
                 ),
                 filled: true,
@@ -147,7 +171,7 @@ class _SpecialRequestBottomSheetState extends State<SpecialRequestBottomSheet> {
                   widget.onContinue(_controller.text);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B5E4B),
+                  backgroundColor: const Color(0xFF3C4119),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.r),

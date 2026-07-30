@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/previous_orders/presentation/manager/review_bloc.dart';
-import 'package:erb/features/previous_orders/presentation/manager/review_event.dart';
-import 'package:erb/features/previous_orders/presentation/manager/review_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
+import 'package:patria/features/previous_orders/presentation/manager/review_bloc.dart';
+import 'package:patria/features/previous_orders/presentation/manager/review_event.dart';
+import 'package:patria/features/previous_orders/presentation/manager/review_state.dart';
 
 class RateOrderScreen extends StatefulWidget {
   final String orderId;
@@ -53,19 +54,31 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
   void _submitFeedback(BuildContext context) {
     if (_rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('please_select_rating'.tr())),
+        SnackBar(
+          content: Text(
+            'please_select_rating'.tr(),
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: const Color(0xFFC90000),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating, // ✅ removes safe area space
+          padding: EdgeInsets.symmetric(
+            horizontal: 16.w,
+            vertical: 16.h, // ✅ reduce height
+          ),
+        ),
       );
       return;
     }
 
     context.read<ReviewBloc>().add(
-          SubmitReviewEvent(
-            orderId: widget.orderId,
-            rating: _rating,
-            comment: _feedbackController.text.trim(),
-            tags: _selectedTags,
-          ),
-        );
+      SubmitReviewEvent(
+        orderId: widget.orderId,
+        rating: _rating,
+        comment: _feedbackController.text.trim(),
+        tags: _selectedTags,
+      ),
+    );
   }
 
   @override
@@ -100,11 +113,38 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
               if (state is ReviewSuccess) {
                 Navigator.pop(context, _rating);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('thank_you_for_feedback'.tr())),
+                  SnackBar(
+                    content: Text(
+                      'thank_you_for_feedback'.tr(),
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    backgroundColor: const Color(0xFF3C4119),
+                    duration: const Duration(seconds: 2),
+                    behavior:
+                        SnackBarBehavior.floating, // ✅ removes safe area space
+
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 16.h, // ✅ reduce height
+                    ),
+                  ),
                 );
               } else if (state is ReviewError) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
+                  SnackBar(
+                    content: Text(
+                      state.message,
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    backgroundColor: const Color(0xFFC90000),
+                    duration: const Duration(seconds: 2),
+                    behavior:
+                        SnackBarBehavior.floating, // ✅ removes safe area space
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 16.h, // ✅ reduce height
+                    ),
+                  ),
                 );
               }
             },
@@ -131,8 +171,9 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                               image: widget.productImage != null
                                   ? NetworkImage(widget.productImage!)
                                   : const AssetImage(
-                                          'assets/images/erbLogo.png')
-                                      as ImageProvider,
+                                          'assets/images/patria_icon.png',
+                                        )
+                                        as ImageProvider,
                               fit: BoxFit.cover,
                             ),
                             borderRadius: BorderRadius.circular(12.r),
@@ -191,6 +232,7 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                           controller: _feedbackController,
                           maxLines: 4,
                           maxLength: 150,
+                          inputFormatters: [EmojiInputFormatter()],
                           decoration: InputDecoration(
                             hintText: 'write_feedback_hint'.tr(),
                             hintStyle: TextStyle(
@@ -202,17 +244,23 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.r),
                               borderSide: const BorderSide(
-                                  color: Color(0xFF8B8B8B), width: 0.5),
+                                color: Color(0xFF8B8B8B),
+                                width: 0.5,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.r),
                               borderSide: const BorderSide(
-                                  color: Color(0xFF8B8B8B), width: 0.5),
+                                color: Color(0xFF8B8B8B),
+                                width: 0.5,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.r),
                               borderSide: const BorderSide(
-                                  color: Color(0xFF6B5E4B), width: 1.5),
+                                color: Color(0xFF3C4119),
+                                width: 1.5,
+                              ),
                             ),
                           ),
                         ),
@@ -236,14 +284,16 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                               },
                               child: Container(
                                 padding: EdgeInsets.symmetric(
-                                    horizontal: 12.w, vertical: 10.h),
+                                  horizontal: 12.w,
+                                  vertical: 10.h,
+                                ),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF6B5E4B)
+                                      ? const Color(0xFF3C4119)
                                       : const Color(0xFFE5E5E5),
                                   border: Border.all(
                                     color: isSelected
-                                        ? const Color(0xFF6B5E4B)
+                                        ? const Color(0xFF3C4119)
                                         : const Color(0xFFCACBD4),
                                     width: 1.5,
                                   ),
@@ -275,9 +325,10 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                             onPressed: isSubmitting
                                 ? null
                                 : () => _submitFeedback(
-                                    context), // ✅ Pass correct context
+                                    context,
+                                  ), // ✅ Pass correct context
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6B5E4B),
+                              backgroundColor: const Color(0xFF3C4119),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(5.r),
                               ),

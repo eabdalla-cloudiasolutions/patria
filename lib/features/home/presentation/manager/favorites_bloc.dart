@@ -1,15 +1,15 @@
-import 'package:erb/features/home/data/models/favorite_product_model.dart';
-import 'package:erb/features/home/data/repos/favorites_repo.dart';
-import 'package:erb/features/home/presentation/manager/favorites_event.dart';
-import 'package:erb/features/home/presentation/manager/favorites_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/features/home/data/models/favorite_product_model.dart';
+import 'package:patria/features/home/data/repos/favorites_repo.dart';
+import 'package:patria/features/home/presentation/manager/favorites_event.dart';
+import 'package:patria/features/home/presentation/manager/favorites_state.dart';
 
 class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
   final FavoritesRepo _favoritesRepo;
 
   FavoritesBloc({required FavoritesRepo favoritesRepo})
-      : _favoritesRepo = favoritesRepo,
-        super(FavoritesInitial()) {
+    : _favoritesRepo = favoritesRepo,
+      super(FavoritesInitial()) {
     on<FetchFavorites>(_onFetchFavorites);
     on<AddToFavorites>(_onAddToFavorites);
     on<RemoveFromFavorites>(_onRemoveFromFavorites);
@@ -44,8 +44,9 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     try {
       await _favoritesRepo.addToFavorites(event.productId);
       final updated = await _favoritesRepo.getFavorites();
-      emit(FavoritesLoaded(
-          favorites: updated)); // ✅ directly emit, no add(FetchFavorites)
+      emit(
+        FavoritesLoaded(favorites: updated),
+      ); // ✅ directly emit, no add(FetchFavorites)
     } catch (e) {
       final message = e is String ? e : e.toString();
       emit(FavoritesError(message: message));
@@ -66,8 +67,9 @@ class FavoritesBloc extends Bloc<FavoritesEvent, FavoritesState> {
     try {
       await _favoritesRepo.removeFromFavorites(event.productId);
       // ✅ Optimistically remove without re-fetching
-      final updated =
-          currentFavorites.where((item) => item.id != event.productId).toList();
+      final updated = currentFavorites
+          .where((item) => item.id != event.productId)
+          .toList();
       emit(FavoritesLoaded(favorites: updated));
     } catch (e) {
       final message = e is String ? e : e.toString();

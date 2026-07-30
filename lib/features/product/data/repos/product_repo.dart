@@ -1,7 +1,7 @@
 // lib/features/product/data/repos/product_repo.dart
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/home/data/models/product_model.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/home/data/models/product_model.dart';
 
 import '../apis/product_api.dart';
 

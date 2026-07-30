@@ -1,14 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/account/presentation/views/account_screen.dart';
-import 'package:erb/features/cart/presentation/manager/cart_bloc.dart';
-import 'package:erb/features/cart/presentation/manager/cart_event.dart';
-import 'package:erb/features/cart/presentation/manager/cart_state.dart';
-import 'package:erb/features/cart/presentation/views/cart_screen.dart';
-import 'package:erb/features/home/presentation/views/home_screen.dart';
-import 'package:erb/features/previous_orders/presentation/views/previous_orders_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/account/presentation/views/account_screen.dart';
+import 'package:patria/features/cart/presentation/manager/cart_bloc.dart';
+import 'package:patria/features/cart/presentation/manager/cart_event.dart';
+import 'package:patria/features/cart/presentation/manager/cart_state.dart';
+import 'package:patria/features/cart/presentation/views/cart_screen.dart';
+import 'package:patria/features/home/presentation/views/home_screen.dart';
+import 'package:patria/features/previous_orders/presentation/views/previous_orders_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class BaseLayer extends StatefulWidget {
@@ -19,8 +19,9 @@ class BaseLayer extends StatefulWidget {
 }
 
 class _BaseLayerState extends State<BaseLayer> {
-  final PersistentTabController _controller =
-      PersistentTabController(initialIndex: 0);
+  final PersistentTabController _controller = PersistentTabController(
+    initialIndex: 0,
+  );
   bool _isHomeTabSelected = false;
 
   @override
@@ -48,15 +49,8 @@ class _BaseLayerState extends State<BaseLayer> {
   List<Widget> _screens() {
     return [
       const Home(),
-      CartScreen(
-        controller: _controller,
-        fromNav: true,
-        myTabIndex: 1,
-      ),
-      PreviousOrdersScreen(
-        controller: _controller,
-        myTabIndex: 2,
-      ),
+      CartScreen(controller: _controller, fromNav: true, myTabIndex: 1),
+      PreviousOrdersScreen(controller: _controller, myTabIndex: 2),
       AccountScreen(controller: _controller),
     ];
   }
@@ -109,47 +103,53 @@ class _BaseLayerState extends State<BaseLayer> {
       PersistentBottomNavBarItem(
         icon: Image.asset('assets/images/home-1.png'),
         inactiveIcon: Image.asset(('assets/images/home.png')),
-        activeColorPrimary: const Color(0xFF6B5E4B),
+        activeColorPrimary: const Color(0xFF3C4119),
         inactiveColorPrimary: const Color(0xFF8B8B8B),
         title: 'nav_home'.tr(),
         textStyle: TextStyle(
-            fontSize: 13.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600),
+          fontSize: 13.sp,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w600,
+        ),
       ),
       PersistentBottomNavBarItem(
         icon: _buildCartIcon(cartItemCount, isActive: true), // 👈
-        inactiveIcon: _buildCartIcon(cartItemCount,
-            isActive:
-                false), // 👈        activeColorPrimary: const Color(0xFF6B5E4B),
-        activeColorPrimary: const Color(0xFF6B5E4B),
-        inactiveColorPrimary: const Color(0xFF8B8B8B), title: 'nav_cart'.tr(),
+        inactiveIcon: _buildCartIcon(
+          cartItemCount,
+          isActive: false,
+        ), // 👈        activeColorPrimary: const Color(0xFF3C4119),
+        activeColorPrimary: const Color(0xFF3C4119),
+        inactiveColorPrimary: const Color(0xFF8B8B8B),
+        title: 'nav_cart'.tr(),
         textStyle: TextStyle(
-            fontSize: 13.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600),
+          fontSize: 13.sp,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w600,
+        ),
       ),
       PersistentBottomNavBarItem(
         icon: Image.asset('assets/images/file-spreadsheet-1.png'),
         inactiveIcon: Image.asset(('assets/images/file-spreadsheet.png')),
-        activeColorPrimary: const Color(0xFF6B5E4B),
+        activeColorPrimary: const Color(0xFF3C4119),
         inactiveColorPrimary: const Color(0xFF8B8B8B),
         title: 'nav_orders'.tr(),
         textStyle: TextStyle(
-            fontSize: 13.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600),
+          fontSize: 13.sp,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w600,
+        ),
       ),
       PersistentBottomNavBarItem(
         icon: Image.asset('assets/images/user-1.png'),
         inactiveIcon: Image.asset(('assets/images/user.png')),
-        activeColorPrimary: const Color(0xFF6B5E4B),
+        activeColorPrimary: const Color(0xFF3C4119),
         inactiveColorPrimary: const Color(0xFF8B8B8B),
         title: 'nav_account'.tr(),
         textStyle: TextStyle(
-            fontSize: 13.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600),
+          fontSize: 13.sp,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w600,
+        ),
       ),
     ];
   }

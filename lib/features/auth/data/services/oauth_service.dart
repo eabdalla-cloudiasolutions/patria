@@ -1,24 +1,40 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_client.dart';
-import 'package:erb/core/network/api_endpoints.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/core/services/user_service.dart';
+import 'package:patria/core/network/api_client.dart';
+import 'package:patria/core/network/api_endpoints.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/core/services/notification_service.dart';
+import 'package:patria/core/services/user_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class OAuthService {
-  // ✅ Use existing ApiClient instead of new Dio instance
   final _dio = ApiClient.instance;
 
-// ─── Google ───────────────────────────────────────────
+  // ✅ Shared helper — register FCM token after any login
+  Future<void> _registerFcmToken() async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken != null) {
+        await NotificationService().registerToken(fcmToken);
+      }
+    } catch (e) {
+      // Silent fail — don't block login if token registration fails
+    }
+  }
+
+  // ─── Google ───────────────────────────────────────────
   Future<Map<String, dynamic>?> signInWithGoogle() async {
     try {
-      // ✅ v7+ API
-      await GoogleSignIn.instance.signOut(); // force account picker
+      print('=== GoogleSignIn: starting signOut...');
+      await GoogleSignIn.instance.signOut();
+      print('=== GoogleSignIn: signOut done, starting authenticate...');
 
-      final GoogleSignInAccount googleUser =
-          await GoogleSignIn.instance.authenticate();
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance
+          .authenticate();
+
+      print('=== GoogleSignIn: got user ${googleUser.email}');
 
       final response = await _dio.post(
         ApiEndpoints.oauthLogin,
@@ -41,11 +57,19 @@ class OAuthService {
         token: data['token'] ?? '',
       );
 
+      await _registerFcmToken(); // ✅
+
       return data;
     } on DioException catch (e) {
+      print('=== GoogleSignIn DioException: ${e.message}');
       throw ApiErrorHandler.handle(e);
     } on GoogleSignInException catch (e) {
+      print('=== GoogleSignInException code: ${e.code}');
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
+      rethrow;
+    } catch (e, stack) {
+      print('=== GoogleSignIn unknown error: $e');
+      print('=== Stack: $stack');
       rethrow;
     }
   }
@@ -60,31 +84,43 @@ class OAuthService {
         ],
       );
 
+      final appleUserId = credential.userIdentifier ?? '';
+
+      String fullName = '';
+      if (credential.givenName != null || credential.familyName != null) {
+        fullName =
+            '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
+                .trim();
+      }
+
       final response = await _dio.post(
         ApiEndpoints.oauthLogin,
         data: {
           'email': credential.email ?? '',
-          'name': '${credential.givenName ?? ''} ${credential.familyName ?? ''}'
-              .trim(),
+          'name': fullName,
           'provider': 'apple',
-          'providerId': credential.userIdentifier ?? '',
+          'providerId': appleUserId,
         },
       );
 
       final data = response.data;
 
+      final savedEmail = data['email'] ?? '';
+      final savedName =
+          data['name'] ?? (fullName.isNotEmpty ? fullName : 'Apple User');
+
       await UserService().saveUser(
         id: data['_id'] ?? '',
-        name: data['name'] ?? '',
-        email: data['email'] ?? '',
+        name: savedName,
+        email: savedEmail,
         phone: '',
         role: data['role'] ?? '',
         token: data['token'] ?? '',
       );
 
+      await _registerFcmToken(); // ✅
+
       return data;
-    } on DioException catch (e) {
-      throw ApiErrorHandler.handle(e);
     } catch (e) {
       rethrow;
     }
@@ -93,14 +129,12 @@ class OAuthService {
   // ─── Facebook ───────────────────────────────────────────
   Future<Map<String, dynamic>?> signInWithFacebook() async {
     try {
-      // ✅ Trigger Facebook login
       final loginResult = await FacebookAuth.instance.login(
         permissions: ['email', 'public_profile'],
       );
 
       if (loginResult.status != LoginStatus.success) return null;
 
-      // ✅ Get user data
       final userData = await FacebookAuth.instance.getUserData(
         fields: 'name,email,id',
       );
@@ -117,7 +151,6 @@ class OAuthService {
 
       final data = response.data;
 
-      // ✅ Save user
       await UserService().saveUser(
         id: data['_id'] ?? '',
         name: data['name'] ?? '',
@@ -126,6 +159,8 @@ class OAuthService {
         role: data['role'] ?? '',
         token: data['token'] ?? '',
       );
+
+      await _registerFcmToken(); // ✅
 
       return data;
     } on DioException catch (e) {

@@ -26,7 +26,7 @@ class AccountMenuItem extends StatelessWidget {
         ListTile(
           onTap: onTap,
           contentPadding: EdgeInsets.symmetric(vertical: 4.h),
-          leading: Icon(icon, size: 18, color: const Color(0xFF6B5E4B)),
+          leading: Icon(icon, size: 18, color: const Color(0xFF3C4119)),
           title: Text(
             title,
             style: TextStyle(
@@ -37,7 +37,8 @@ class AccountMenuItem extends StatelessWidget {
               letterSpacing: 0.28,
             ),
           ),
-          trailing: trailing ??
+          trailing:
+              trailing ??
               const Icon(
                 Icons.arrow_forward_ios,
                 size: 16,

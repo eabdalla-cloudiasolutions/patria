@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:erb/features/home/data/models/favorite_product_model.dart';
+import 'package:patria/features/home/data/models/favorite_product_model.dart';
 
 abstract class FavoritesState extends Equatable {
   const FavoritesState();

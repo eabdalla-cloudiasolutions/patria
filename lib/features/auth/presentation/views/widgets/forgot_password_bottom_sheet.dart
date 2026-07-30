@@ -1,9 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/auth/data/apis/auth_api.dart';
-import 'package:erb/features/auth/presentation/views/widgets/custom_text_field.dart';
-import 'package:erb/features/auth/presentation/views/widgets/forgot_password_otp_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/validators.dart';
+import 'package:patria/features/auth/data/apis/auth_api.dart';
+import 'package:patria/features/auth/presentation/views/widgets/custom_text_field.dart';
+import 'package:patria/features/auth/presentation/views/widgets/forgot_password_otp_bottom_sheet.dart';
 
 class ForgotPasswordBottomSheet extends StatefulWidget {
   const ForgotPasswordBottomSheet({super.key});
@@ -27,8 +28,9 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
   // ✅ API call
   Future<void> _sendOtp() async {
     final phone = _phoneController.text.trim();
-    if (phone.isEmpty) {
-      setState(() => _errorMessage = 'Please enter your phone number');
+    final validationError = Validators.phone(phone);
+    if (validationError != null) {
+      setState(() => _errorMessage = validationError);
       return;
     }
 
@@ -90,7 +92,7 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
                 width: 90.w,
                 height: 90.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EA),
+                  color: const Color(0xFFE5E8D3),
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: const Color(0x194A3F33),
@@ -146,8 +148,10 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
                 SizedBox(height: 12.h),
                 Container(
                   width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEEEE),
                     borderRadius: BorderRadius.circular(8.r),
@@ -155,8 +159,11 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 18),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 18,
+                      ),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
@@ -180,10 +187,12 @@ class _ForgotPasswordBottomSheetState extends State<ForgotPasswordBottomSheet> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _sendOtp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B5E4B),
+                  backgroundColor: const Color(0xFF3C4119),
                   minimumSize: const Size(double.infinity, 56),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 30.w, vertical: 16.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 30.w,
+                    vertical: 16.h,
+                  ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.r),

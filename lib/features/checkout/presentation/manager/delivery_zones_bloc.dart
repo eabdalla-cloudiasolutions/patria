@@ -1,7 +1,7 @@
-import 'package:erb/features/checkout/data/repos/delivery_zones_repo.dart';
-import 'package:erb/features/checkout/presentation/manager/delivery_zones_event.dart';
-import 'package:erb/features/checkout/presentation/manager/delivery_zones_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/features/checkout/data/repos/delivery_zones_repo.dart';
+import 'package:patria/features/checkout/presentation/manager/delivery_zones_event.dart';
+import 'package:patria/features/checkout/presentation/manager/delivery_zones_state.dart';
 
 class DeliveryZonesBloc extends Bloc<DeliveryZonesEvent, DeliveryZonesState> {
   final DeliveryZonesRepo _repo;
@@ -11,7 +11,9 @@ class DeliveryZonesBloc extends Bloc<DeliveryZonesEvent, DeliveryZonesState> {
   }
 
   Future<void> _onFetch(
-      FetchDeliveryZones event, Emitter<DeliveryZonesState> emit) async {
+    FetchDeliveryZones event,
+    Emitter<DeliveryZonesState> emit,
+  ) async {
     emit(DeliveryZonesLoading());
     try {
       final zones = await _repo.getDeliveryZones();

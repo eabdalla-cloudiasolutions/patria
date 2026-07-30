@@ -1,4 +1,4 @@
-package com.cloudiasolutions.erb
+package com.cloudiasolutions.patria
 
 import io.flutter.embedding.android.FlutterActivity
 

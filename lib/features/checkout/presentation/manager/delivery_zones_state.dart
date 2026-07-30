@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:erb/features/checkout/data/models/delivery_zone_model.dart';
+import 'package:patria/features/checkout/data/models/delivery_zone_model.dart';
 
 abstract class DeliveryZonesState extends Equatable {
   const DeliveryZonesState();

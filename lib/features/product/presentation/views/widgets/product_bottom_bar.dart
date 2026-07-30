@@ -4,12 +4,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class ProductBottomBar extends StatefulWidget {
   final double price;
-  final Function(int quantity) onAddToCart; // now receives quantity
+  final Function(int quantity) onAddToCart;
+  final bool isEnabled;
+  final String? buttonText;
 
   const ProductBottomBar({
     super.key,
     required this.price,
     required this.onAddToCart,
+    this.isEnabled = true,
+    this.buttonText,
   });
 
   @override
@@ -21,13 +25,27 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
 
   double get _totalPrice => widget.price * _quantity;
 
+  String formatPrice(double price) {
+    if (price == price.truncateToDouble()) {
+      return price.toInt().toString();
+    }
+    return price.toStringAsFixed(2);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final baseText = widget.buttonText ?? 'add_to_cart'.tr();
+    final buttonLabel = '$baseText ${formatPrice(_totalPrice)} EGP';
+
     return Container(
-      padding:
-          EdgeInsets.only(top: 28.h, left: 20.w, right: 20.w, bottom: 36.h),
+      padding: EdgeInsets.only(
+        top: 28.h,
+        left: 20.w,
+        right: 20.w,
+        bottom: 36.h,
+      ),
       decoration: ShapeDecoration(
-        color: Color(0xFFFAFAF7),
+        color: const Color(0xFFFAFAF7),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20.r),
@@ -36,9 +54,9 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
         ),
         shadows: [
           BoxShadow(
-            color: Color(0x26000000),
+            color: const Color(0x26000000),
             blurRadius: 8,
-            offset: Offset(1, 0),
+            offset: const Offset(1, 0),
           ),
         ],
       ),
@@ -54,7 +72,6 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
             ),
             child: Row(
               children: [
-                // Minus
                 GestureDetector(
                   onTap: () {
                     if (_quantity > 1) setState(() => _quantity--);
@@ -64,7 +81,7 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
                     child: const Icon(
                       Icons.remove,
                       size: 24,
-                      color: Color(0xFF6B5E4B),
+                      color: Color(0xFF3C4119),
                     ),
                   ),
                 ),
@@ -77,7 +94,6 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                // Plus
                 GestureDetector(
                   onTap: () => setState(() => _quantity++),
                   child: Container(
@@ -85,7 +101,7 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
                     child: const Icon(
                       Icons.add,
                       size: 24,
-                      color: Color(0xFF6B5E4B),
+                      color: Color(0xFF3C4119),
                     ),
                   ),
                 ),
@@ -93,27 +109,34 @@ class _ProductBottomBarState extends State<ProductBottomBar> {
             ),
           ),
           SizedBox(width: 12.w),
-          // Add to cart button
           Expanded(
             child: GestureDetector(
-              onTap: () => widget.onAddToCart(_quantity), // pass quantity
+              onTap: widget.isEnabled
+                  ? () => widget.onAddToCart(_quantity)
+                  : null,
               child: Container(
                 height: 56.h,
                 padding: const EdgeInsets.all(12),
                 decoration: ShapeDecoration(
-                  color: const Color(0xFF6B5E4B),
+                  color: widget.isEnabled
+                      ? const Color(0xFF3C4119)
+                      : const Color(0xFFCACBD4),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.r),
                   ),
                 ),
                 child: Center(
-                  child: Text(
-                    'add_to_cart'.tr(args: [_totalPrice.toStringAsFixed(2)]),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.sp,
-                      fontFamily: 'Montserrat',
-                      fontWeight: FontWeight.w600,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      buttonLabel,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16.sp,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),

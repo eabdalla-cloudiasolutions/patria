@@ -1,6 +1,6 @@
 // lib/features/cart/data/repositories/coupon_repository.dart
-import 'package:erb/features/cart/data/apis/coupon_api.dart';
-import 'package:erb/features/cart/data/models/coupon_model.dart';
+import 'package:patria/features/cart/data/apis/coupon_api.dart';
+import 'package:patria/features/cart/data/models/coupon_model.dart';
 
 class CouponRepository {
   final CouponApi api;

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
 
-class CustomTextField extends StatelessWidget {
+class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
@@ -10,7 +11,8 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final VoidCallback? onToggleVisibility;
   final TextInputType keyboardType;
-  final String? Function(String?)? validator; // ✅ add this
+  final String? Function(String?)? validator;
+  final Color focusColor;
 
   const CustomTextField({
     super.key,
@@ -22,18 +24,71 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.onToggleVisibility,
     this.keyboardType = TextInputType.text,
-    this.validator, // ✅ add this
+    this.validator,
+    this.focusColor = const Color(0xFF3C4119),
   });
 
   @override
+  State<CustomTextField> createState() => _CustomTextFieldState();
+}
+
+class _CustomTextFieldState extends State<CustomTextField> {
+  late final FocusNode _focusNode;
+
+  bool get _hasText => widget.controller.text.isNotEmpty;
+
+  void _listener() => setState(() {});
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _focusNode.addListener(_listener);
+    widget.controller.addListener(_listener);
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_listener);
+    _focusNode.dispose();
+    widget.controller.removeListener(_listener);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final bool isFocused = _focusNode.hasFocus;
+    final bool isActive = isFocused || _hasText;
+
+    // ✅ Black when has text, accent when focused, grey when empty
+    final Color iconColor = _hasText
+        ? Colors.black
+        : isFocused
+        ? widget.focusColor
+        : const Color(0xFF8B8B8B);
+
+    final Color textColor = isActive ? Colors.black : const Color(0xFF8B8B8B);
+    final Color hintColor = isFocused ? Colors.black : const Color(0xFF8B8B8B);
+    final Color labelColor = isActive ? Colors.black : const Color(0xFF8B8B8B);
+    final Color borderColor = _hasText
+        ? widget.focusColor
+        : const Color(0xFFE5E5E5);
+
+    Widget? coloredPrefixIcon;
+    if (widget.prefixIcon != null) {
+      coloredPrefixIcon = ColorFiltered(
+        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+        child: widget.prefixIcon!,
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
+          widget.label,
           style: TextStyle(
-            color: Colors.black,
+            color: labelColor,
             fontSize: 12.sp,
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w500,
@@ -41,69 +96,58 @@ class CustomTextField extends StatelessWidget {
         ),
         SizedBox(height: 10.h),
         TextFormField(
-          // ✅ changed from TextField to TextFormField
-          controller: controller,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          validator: validator, // ✅ add this
+          controller: widget.controller,
+          focusNode: _focusNode,
+          keyboardType: widget.keyboardType,
+          obscureText: widget.obscureText,
+          validator: widget.validator,
+          inputFormatters: [EmojiInputFormatter()],
           style: TextStyle(
-            color: Color(0xFF8B8B8B),
+            color: textColor,
             fontSize: 16.sp,
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w400,
           ),
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: widget.hint,
             hintStyle: TextStyle(
-              color: Color(0xFF8B8B8B),
+              color: hintColor,
               fontSize: 16.sp,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w400,
             ),
-            prefixIcon: prefixIcon,
-            suffixIcon: isPassword
+            prefixIcon: coloredPrefixIcon,
+            suffixIcon: widget.isPassword
                 ? IconButton(
                     icon: Icon(
-                      obscureText
+                      widget.obscureText
                           ? Icons.visibility_off_outlined
                           : Icons.visibility_outlined,
-                      color: const Color(0xFF8B8B8B),
+                      color: iconColor,
                       size: 24,
                     ),
-                    onPressed: onToggleVisibility,
+                    onPressed: widget.onToggleVisibility,
                   )
                 : null,
-            contentPadding:
-                EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 18.w,
+              vertical: 12.h,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                width: 1.w,
-                color: Color(0xFFE5E5E5),
-              ),
+              borderSide: BorderSide(width: 1.w, color: borderColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                width: 1.w,
-                color: Color(0xFFE5E5E5),
-              ),
+              borderSide: BorderSide(width: 1.w, color: widget.focusColor),
             ),
             errorBorder: OutlineInputBorder(
-              // ✅ red border on error
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                width: 1.w,
-                color: Colors.red,
-              ),
+              borderSide: BorderSide(width: 1.w, color: Colors.red),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              // ✅ red border on error focused
               borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                width: 1.w,
-                color: Colors.red,
-              ),
+              borderSide: BorderSide(width: 1.w, color: Colors.red),
             ),
             filled: true,
             fillColor: Colors.white,

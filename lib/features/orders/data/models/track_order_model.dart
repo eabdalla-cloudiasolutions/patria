@@ -38,12 +38,17 @@ class TrackOrderModel {
               ?.map((e) => TrackOrderItem.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      deliveryDetails: json['deliveryDetails'] != null
-          ? TrackOrderDelivery.fromJson(
-              json['deliveryDetails'] as Map<String, dynamic>)
-          : null,
+      // ✅ deliveryStatus + driver live at the TOP LEVEL of the response,
+      // so we parse them from the whole json object.
+      deliveryDetails: TrackOrderDelivery.fromJson(json),
     );
   }
+
+  // ✅ Convenience getters used by the tracking screen
+  double? get customerLat => customer?.lat;
+  double? get customerLng => customer?.lng;
+  double? get driverLat => deliveryDetails?.driverLat;
+  double? get driverLng => deliveryDetails?.driverLng;
 
   int get currentStep {
     switch (status.toLowerCase()) {
@@ -70,11 +75,17 @@ class TrackOrderCustomer {
   final String phone;
   final String address;
 
+  // ✅ Delivery location (user) from API
+  final double? lat;
+  final double? lng;
+
   TrackOrderCustomer({
     required this.id,
     required this.name,
     required this.phone,
     required this.address,
+    this.lat,
+    this.lng,
   });
 
   factory TrackOrderCustomer.fromJson(Map<String, dynamic> json) {
@@ -83,6 +94,8 @@ class TrackOrderCustomer {
       name: json['name'] ?? '',
       phone: json['phone'] ?? '',
       address: json['address'] ?? '',
+      lat: (json['lat'] as num?)?.toDouble(),
+      lng: (json['lng'] as num?)?.toDouble(),
     );
   }
 }
@@ -140,16 +153,32 @@ class TrackOrderHistoryItem {
 class TrackOrderDelivery {
   final String deliveryStatus;
   final String? driverName;
+  final String? driverPhone;
+  final String? vehicleType;
+
+  // ✅ Driver location from API
+  final double? driverLat;
+  final double? driverLng;
 
   TrackOrderDelivery({
     required this.deliveryStatus,
     this.driverName,
+    this.driverPhone,
+    this.vehicleType,
+    this.driverLat,
+    this.driverLng,
   });
 
   factory TrackOrderDelivery.fromJson(Map<String, dynamic> json) {
+    final driver = json['driver'] as Map<String, dynamic>?;
+
     return TrackOrderDelivery(
       deliveryStatus: json['deliveryStatus'] ?? '',
-      driverName: json['driver']?['name'],
+      driverName: driver?['name'],
+      driverPhone: driver?['phone'],
+      vehicleType: driver?['vehicleType'],
+      driverLat: (driver?['lat'] as num?)?.toDouble(),
+      driverLng: (driver?['lng'] as num?)?.toDouble(),
     );
   }
 }

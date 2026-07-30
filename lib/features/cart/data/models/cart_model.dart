@@ -20,7 +20,7 @@ class CartResponse {
           (json['items'] as List?)?.map((e) => CartItem.fromJson(e)).toList() ??
               [],
       total: (json['total'] as num?)?.toDouble() ?? 0.0,
-      specialRequests: json['specialRequests'], // 👈
+      specialRequests: json['specialRequests'],
       itemCount: json['itemCount'] as int? ?? 0,
     );
   }
@@ -33,6 +33,7 @@ class CartItem {
   final double price;
   final String? notes;
   final Map<String, dynamic>? customization;
+  final List<SelectedVariant> selectedVariants; // ← NEW FIELD
 
   CartItem({
     required this.id,
@@ -41,10 +42,10 @@ class CartItem {
     required this.price,
     this.notes,
     this.customization,
+    this.selectedVariants = const [], // ← default empty list
   });
 
-  factory CartItem.fromJson(Map<String, dynamic>? json) {
-    if (json == null) throw Exception('CartItem.fromJson: null data');
+  factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       id: json['_id'] ?? '',
       product: Product.fromJson(json['product'] ?? {}),
@@ -52,6 +53,10 @@ class CartItem {
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       notes: json['notes'],
       customization: json['customization'],
+      selectedVariants: (json['selectedVariants'] as List?)
+              ?.map((v) => SelectedVariant.fromJson(v))
+              .toList() ??
+          [],
     );
   }
 }
@@ -82,6 +87,27 @@ class Product {
       category: json['category'],
       image: json['image'],
       totalInventory: json['totalInventory'] ?? 0,
+    );
+  }
+}
+
+// 👈 NEW: Represents a selected variant from the cart API
+class SelectedVariant {
+  final String group;
+  final String option;
+  final double priceAdjustment;
+
+  SelectedVariant({
+    required this.group,
+    required this.option,
+    required this.priceAdjustment,
+  });
+
+  factory SelectedVariant.fromJson(Map<String, dynamic> json) {
+    return SelectedVariant(
+      group: json['group'] ?? '',
+      option: json['option'] ?? '',
+      priceAdjustment: (json['priceAdjustment'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }

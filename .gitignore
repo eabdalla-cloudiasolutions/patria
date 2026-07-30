@@ -31,7 +31,13 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+android/build/
+ios/build/
 /coverage/
+
+# Secrets
+.env
+firepit-log.txt
 
 # Symbolication related
 app.*.symbols
@@ -43,3 +49,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+android/key.properties
+android/local.properties
+*.jks
+
+# API keys — machine-local, never committed
+ios/Flutter/Config.xcconfig
+lib/core/config/api_keys.dart

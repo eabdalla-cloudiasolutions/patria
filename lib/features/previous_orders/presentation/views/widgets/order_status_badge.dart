@@ -26,7 +26,7 @@ class OrderStatusBadge extends StatelessWidget {
   Color get _color {
     switch (_normalizedStatus) {
       case 'active':
-        return const Color(0xFF6B5E4B);
+        return const Color(0xFF3C4119);
       case 'delivered':
         return const Color(0xFF059B5A);
       case 'cancelled':
@@ -57,10 +57,7 @@ class OrderStatusBadge extends StatelessWidget {
         Container(
           width: 4.43.w,
           height: 4.43.h,
-          decoration: ShapeDecoration(
-            color: _color,
-            shape: const OvalBorder(),
-          ),
+          decoration: ShapeDecoration(color: _color, shape: const OvalBorder()),
         ),
         SizedBox(width: 6.w),
         Text(

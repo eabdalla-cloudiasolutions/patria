@@ -82,7 +82,7 @@ class OrderCardActions extends StatelessWidget {
       child: Container(
         height: 40.h,
         decoration: ShapeDecoration(
-          color: const Color(0xFF6B5E4B),
+          color: const Color(0xFF3C4119),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.r),
           ),
@@ -139,7 +139,7 @@ class OrderCardActions extends StatelessWidget {
         height: 40.h,
         decoration: ShapeDecoration(
           shape: RoundedRectangleBorder(
-            side: BorderSide(width: 1.w, color: const Color(0xFF6B5E4B)),
+            side: BorderSide(width: 1.w, color: const Color(0xFF3C4119)),
             borderRadius: BorderRadius.circular(5.r),
           ),
         ),
@@ -151,13 +151,13 @@ class OrderCardActions extends StatelessWidget {
                   Icon(
                     Icons.visibility_outlined,
                     size: 16.sp,
-                    color: const Color(0xFF6B5E4B),
+                    color: const Color(0xFF3C4119),
                   ),
                   SizedBox(width: 6.w),
                   Text(
                     label,
                     style: TextStyle(
-                      color: const Color(0xFF6B5E4B),
+                      color: const Color(0xFF3C4119),
                       fontSize: 12.sp,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w600,
@@ -168,7 +168,7 @@ class OrderCardActions extends StatelessWidget {
             : Text(
                 label,
                 style: TextStyle(
-                  color: const Color(0xFF6B5E4B),
+                  color: const Color(0xFF3C4119),
                   fontSize: 12.sp,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w600,

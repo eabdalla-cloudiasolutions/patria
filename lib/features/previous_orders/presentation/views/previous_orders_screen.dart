@@ -1,22 +1,22 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/services/user_service.dart';
-import 'package:erb/core/widgets/empty_state_widget.dart';
-import 'package:erb/features/cart/presentation/manager/cart_bloc.dart';
-import 'package:erb/features/cart/presentation/manager/cart_event.dart';
-import 'package:erb/features/cart/presentation/views/cart_screen.dart';
-import 'package:erb/features/orders/presentation/views/order_summary_screen.dart';
-import 'package:erb/features/previous_orders/data/models/order_model.dart';
-import 'package:erb/features/previous_orders/presentation/manager/orders_bloc.dart';
-import 'package:erb/features/previous_orders/presentation/manager/orders_event.dart';
-import 'package:erb/features/previous_orders/presentation/manager/orders_state.dart';
-import 'package:erb/features/previous_orders/presentation/views/widgets/order_details_bottom_sheet.dart';
-import 'package:erb/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/services/user_service.dart';
+import 'package:patria/core/widgets/empty_state_widget.dart';
+import 'package:patria/features/cart/presentation/manager/cart_bloc.dart';
+import 'package:patria/features/cart/presentation/manager/cart_event.dart';
+import 'package:patria/features/cart/presentation/views/cart_screen.dart';
+import 'package:patria/features/orders/presentation/views/order_summary_screen.dart';
+import 'package:patria/features/previous_orders/data/models/order_model.dart';
+import 'package:patria/features/previous_orders/presentation/manager/orders_bloc.dart';
+import 'package:patria/features/previous_orders/presentation/manager/orders_event.dart';
+import 'package:patria/features/previous_orders/presentation/manager/orders_state.dart';
+import 'package:patria/features/previous_orders/presentation/views/widgets/order_details_bottom_sheet.dart';
+import 'package:patria/main.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -43,14 +43,14 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
   bool _isLoading = true;
   bool _isTabSelected = false;
   late OrdersBloc _ordersBloc;
-  Timer? _pollingTimer; // 👈 added
+  Timer? _pollingTimer;
 
   @override
   void initState() {
     super.initState();
     _checkLoginStatus();
     widget.controller.addListener(_onTabChanged);
-    _startPolling(); // 👈 added
+    _startPolling();
   }
 
   @override
@@ -68,15 +68,14 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
   void dispose() {
     widget.controller.removeListener(_onTabChanged);
     routeObserver.unsubscribe(this);
-    _pollingTimer?.cancel(); // 👈 added
+    _pollingTimer?.cancel();
     super.dispose();
   }
 
-  // 👇 Added
   void _startPolling() {
     _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       if (mounted && _isLoggedIn) {
-        _ordersBloc.add(RefreshOrders()); // 👈 silent refresh, no shimmer
+        _ordersBloc.add(RefreshOrders());
       }
     });
   }
@@ -143,10 +142,21 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
       final cartBloc = context.read<CartBloc>();
 
       for (final item in order.items) {
-        cartBloc.add(AddToCart(
-          productId: item.productId,
-          quantity: item.quantity,
-        ));
+        cartBloc.add(
+          AddToCart(
+            productId: item.productId,
+            quantity: item.quantity,
+            notes: item.notes,
+            // ✅ Convert selectedVariants to customization map (what backend expects)
+            customization: item.selectedVariants.isNotEmpty
+                ? Map.fromEntries(
+                    item.selectedVariants.map(
+                      (v) => MapEntry(v.group, v.option),
+                    ),
+                  )
+                : null,
+          ),
+        );
         await Future.delayed(const Duration(milliseconds: 50));
       }
 
@@ -174,7 +184,16 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('reorder_failed'.tr())),
+          SnackBar(
+            content: Text(
+              'reorder_failed'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: const Color(0xFFC90000),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+          ),
         );
       }
     }
@@ -203,7 +222,6 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
         paymentMethod: '',
         pointsEarned: 0,
         cartItems: [],
-        serviceFee: 32.0,
         orderId: order['orderId'],
       ),
       withNavBar: true,
@@ -248,9 +266,10 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
           subtitle: 'please_sign_in_to_view_orders'.tr(),
           buttonText: 'sign_in'.tr(),
           onButtonPressed: () {
-            Navigator.of(context, rootNavigator: true)
-                .pushNamed(Routes.splashScreen)
-                .then((_) => _checkLoginStatus());
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).pushNamed(Routes.splashScreen).then((_) => _checkLoginStatus());
           },
         ),
       );
@@ -303,13 +322,18 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline,
-                      size: 48, color: Color(0xFFCACBD4)),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Color(0xFFCACBD4),
+                  ),
                   SizedBox(height: 12.h),
                   Text(
                     state.message,
                     style: TextStyle(
-                        color: const Color(0xFF8B8B8B), fontSize: 14.sp),
+                      color: const Color(0xFF8B8B8B),
+                      fontSize: 14.sp,
+                    ),
                   ),
                   SizedBox(height: 12.h),
                   ElevatedButton(

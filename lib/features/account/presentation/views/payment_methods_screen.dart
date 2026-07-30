@@ -1,17 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/services/user_service.dart';
-import 'package:erb/core/widgets/delete_overlay.dart';
-import 'package:erb/core/widgets/empty_state_widget.dart';
-import 'package:erb/features/account/data/apis/payment_api.dart';
-import 'package:erb/features/account/presentation/manager/payments_card/payment_bloc.dart';
-import 'package:erb/features/account/presentation/manager/payments_card/payment_event.dart';
-import 'package:erb/features/account/presentation/manager/payments_card/payment_state.dart';
-import 'package:erb/features/account/presentation/views/add_payment_bottom_sheet.dart';
-import 'package:erb/features/account/presentation/views/widgets/payment_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/services/user_service.dart';
+import 'package:patria/core/widgets/delete_overlay.dart';
+import 'package:patria/core/widgets/empty_state_widget.dart';
+import 'package:patria/features/account/data/apis/payment_api.dart';
+import 'package:patria/features/account/presentation/manager/payments_card/payment_bloc.dart';
+import 'package:patria/features/account/presentation/manager/payments_card/payment_event.dart';
+import 'package:patria/features/account/presentation/manager/payments_card/payment_state.dart';
+import 'package:patria/features/account/presentation/views/add_payment_bottom_sheet.dart';
+import 'package:patria/features/account/presentation/views/widgets/payment_card.dart';
 import 'package:shimmer/shimmer.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
@@ -35,7 +35,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _checkLoginStatus(); // refresh after returning from login
+    _checkLoginStatus();
   }
 
   Future<void> _checkLoginStatus() async {
@@ -80,20 +80,20 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           centerTitle: true,
         ),
         body: EmptyStateWidget(
-          imagePath: 'assets/images/Empty Card.png', // use your own asset
+          imagePath: 'assets/images/Empty Card.png',
           title: 'no_payment_methods'.tr(),
           subtitle: 'please_sign_in_to_view_payment_methods'.tr(),
           buttonText: 'sign_in'.tr(),
           onButtonPressed: () {
-            Navigator.of(context, rootNavigator: true)
-                .pushNamed(Routes.splashScreen)
-                .then((_) => _checkLoginStatus());
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).pushNamed(Routes.splashScreen).then((_) => _checkLoginStatus());
           },
         ),
       );
     }
 
-    // Logged‑in user – show the original BLoC content
     return BlocProvider(
       create: (_) => PaymentBloc()..add(LoadPaymentMethods()),
       child: Scaffold(
@@ -142,12 +142,19 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 48, color: Color(0xFFCACBD4)),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Color(0xFFCACBD4),
+                    ),
                     SizedBox(height: 12.h),
-                    Text(state.message,
-                        style: TextStyle(
-                            color: const Color(0xFF8B8B8B), fontSize: 14.sp)),
+                    Text(
+                      state.message,
+                      style: TextStyle(
+                        color: const Color(0xFF8B8B8B),
+                        fontSize: 14.sp,
+                      ),
+                    ),
                     SizedBox(height: 12.h),
                     ElevatedButton(
                       onPressed: () =>
@@ -161,7 +168,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
             if (state is PaymentLoaded && state.methods.isEmpty) {
               return EmptyStateWidget(
-                imagePath: 'assets/images/Empty Card.png', // use your own asset
+                imagePath: 'assets/images/Empty Card.png',
                 title: 'no_payment_methods'.tr(),
                 subtitle: 'add_payment_method'.tr(),
                 buttonText: 'add_new_payment'.tr(),
@@ -211,16 +218,28 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                               try {
                                 await PaymentApi().setDefaultCard(method.id);
                                 if (context.mounted) {
-                                  context
-                                      .read<PaymentBloc>()
-                                      .add(LoadPaymentMethods());
+                                  context.read<PaymentBloc>().add(
+                                    LoadPaymentMethods(),
+                                  );
                                 }
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(e.toString()),
-                                      backgroundColor: Colors.red,
+                                      content: Text(
+                                        e.toString(),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      backgroundColor: const Color(0xFFC90000),
+                                      duration: const Duration(seconds: 2),
+                                      behavior: SnackBarBehavior
+                                          .floating, // ✅ removes safe area space
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16.w,
+                                        vertical: 16.h, // ✅ reduce height
+                                      ),
                                     ),
                                   );
                                 }
@@ -229,38 +248,63 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                             onDelete: () async {
                               await ConfirmationBottomSheet.show(
                                 context: context,
-                                title:
-                                    "Are you sure you want to delete this payment card?",
-                                subtitle:
-                                    "This action cannot be undone. This payment card will be permanently deleted."
-                                        .tr(args: [cardType, cardLast4]),
-                                confirmText: "Delete Card",
-                                cancelText: "cancel".tr(),
+                                title: 'delete_payment_card_title'.tr(),
+                                subtitle: 'delete_payment_card_subtitle'.tr(),
+                                confirmText: 'delete_card'.tr(),
+                                cancelText: 'cancel'.tr(),
                                 onConfirm: () async {
                                   try {
                                     await PaymentApi().deleteCard(method.id);
                                     if (context.mounted) {
-                                      context
-                                          .read<PaymentBloc>()
-                                          .add(LoadPaymentMethods());
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
+                                      context.read<PaymentBloc>().add(
+                                        LoadPaymentMethods(),
+                                      );
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
                                           content: Text(
-                                              'card_deleted_successfully'.tr()),
+                                            'card_deleted_successfully'.tr(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
                                           duration: const Duration(seconds: 2),
-                                          backgroundColor:
-                                              const Color(0xFF6B5E4B),
+                                          backgroundColor: const Color(
+                                            0xFF3C4119,
+                                          ),
+                                          behavior: SnackBarBehavior
+                                              .floating, // ✅ removes safe area space
+
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 16.w,
+                                            vertical: 16.h, // ✅ reduce height
+                                          ),
                                         ),
                                       );
                                     }
                                   } catch (e) {
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
-                                          content: Text(e.toString()),
-                                          backgroundColor: Colors.red,
+                                          content: Text(
+                                            e.toString(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          backgroundColor: const Color(
+                                            0xFFC90000,
+                                          ),
+                                          duration: const Duration(seconds: 2),
+                                          behavior: SnackBarBehavior
+                                              .floating, // ✅ removes safe area space
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 16.w,
+                                            vertical: 16.h, // ✅ reduce height
+                                          ),
                                         ),
                                       );
                                     }
@@ -271,7 +315,6 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                 enableDrag: true,
                               );
                             },
-                            // onEdit: () async { ... } // you can uncomment if needed
                           );
                         },
                       ),
@@ -309,7 +352,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6B5E4B),
+          backgroundColor: const Color(0xFF3C4119),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.r),
           ),

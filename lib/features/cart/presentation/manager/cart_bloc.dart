@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/cart/data/repos/cart_repository.dart';
-import 'package:erb/features/cart/presentation/manager/cart_event.dart';
-import 'package:erb/features/cart/presentation/manager/cart_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/cart/data/repos/cart_repository.dart';
+import 'package:patria/features/cart/presentation/manager/cart_event.dart';
+import 'package:patria/features/cart/presentation/manager/cart_state.dart';
 
 class CartBloc extends Bloc<CartEvent, CartState> {
   final CartRepository _repository = CartRepository();
@@ -14,6 +14,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<UpdateCartItemQuantity>(_onUpdateQuantity);
     on<RemoveCartItem>(_onRemoveItem);
     on<ClearCart>(_onClearCart);
+    on<UpdateCartItem>(_onUpdateCartItem);
   }
 
   Future<void> _onLoadCart(LoadCart event, Emitter<CartState> emit) async {
@@ -22,8 +23,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       final cart = await _repository.getCart();
       emit(CartLoaded(cart));
     } catch (e) {
-      final message =
-          e is DioException ? ApiErrorHandler.handle(e) : e.toString();
+      final message = e is DioException
+          ? ApiErrorHandler.handle(e)
+          : e.toString();
       emit(CartError(message));
     }
   }
@@ -36,17 +38,21 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         quantity: event.quantity,
         notes: event.notes,
         customization: event.customization,
+        selectedVariants: event.selectedVariants, // ← add this
       );
       emit(CartLoaded(cart));
     } catch (e) {
-      final message =
-          e is DioException ? ApiErrorHandler.handle(e) : e.toString();
+      final message = e is DioException
+          ? ApiErrorHandler.handle(e)
+          : e.toString();
       emit(CartError(message));
     }
   }
 
   Future<void> _onUpdateQuantity(
-      UpdateCartItemQuantity event, Emitter<CartState> emit) async {
+    UpdateCartItemQuantity event,
+    Emitter<CartState> emit,
+  ) async {
     emit(CartLoading());
     try {
       final cart = await _repository.updateQuantity(
@@ -55,21 +61,46 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       );
       emit(CartLoaded(cart));
     } catch (e) {
-      final message =
-          e is DioException ? ApiErrorHandler.handle(e) : e.toString();
+      final message = e is DioException
+          ? ApiErrorHandler.handle(e)
+          : e.toString();
       emit(CartError(message));
     }
   }
 
   Future<void> _onRemoveItem(
-      RemoveCartItem event, Emitter<CartState> emit) async {
+    RemoveCartItem event,
+    Emitter<CartState> emit,
+  ) async {
     emit(CartLoading());
     try {
       final cart = await _repository.removeItem(itemId: event.itemId);
       emit(CartLoaded(cart));
     } catch (e) {
-      final message =
-          e is DioException ? ApiErrorHandler.handle(e) : e.toString();
+      final message = e is DioException
+          ? ApiErrorHandler.handle(e)
+          : e.toString();
+      emit(CartError(message));
+    }
+  }
+
+  Future<void> _onUpdateCartItem(
+    UpdateCartItem event,
+    Emitter<CartState> emit,
+  ) async {
+    emit(CartLoading());
+    try {
+      final cart = await _repository.updateCartItem(
+        itemId: event.itemId,
+        quantity: event.quantity,
+        customization: event.customization,
+        notes: event.notes,
+      );
+      emit(CartLoaded(cart));
+    } catch (e) {
+      final message = e is DioException
+          ? ApiErrorHandler.handle(e)
+          : e.toString();
       emit(CartError(message));
     }
   }
@@ -80,8 +111,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       final cart = await _repository.clearCart();
       emit(CartLoaded(cart));
     } catch (e) {
-      final message =
-          e is DioException ? ApiErrorHandler.handle(e) : e.toString();
+      final message = e is DioException
+          ? ApiErrorHandler.handle(e)
+          : e.toString();
       emit(CartError(message));
     }
   }

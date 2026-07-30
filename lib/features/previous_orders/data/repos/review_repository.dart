@@ -1,5 +1,5 @@
-import 'package:erb/features/previous_orders/data/apis/review_api.dart';
-import 'package:erb/features/previous_orders/data/models/review_model.dart';
+import 'package:patria/features/previous_orders/data/apis/review_api.dart';
+import 'package:patria/features/previous_orders/data/models/review_model.dart';
 
 class ReviewRepository {
   final ReviewApi _api = ReviewApi();

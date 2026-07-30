@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/previous_orders/data/models/order_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/previous_orders/data/models/order_model.dart';
 
 class OrderHeader extends StatelessWidget {
   final OrderModel order;
@@ -17,7 +17,7 @@ class OrderHeader extends StatelessWidget {
     switch (order.status.toLowerCase()) {
       case 'active':
       case 'pending':
-        return const Color(0xFF6B5E4B);
+        return const Color(0xFF3C4119);
       case 'delivered':
         return const Color(0xFF059B5A);
       case 'cancelled':
@@ -31,7 +31,7 @@ class OrderHeader extends StatelessWidget {
     switch (order.status.toLowerCase()) {
       case 'active':
       case 'pending':
-        return const Color(0xFFF5F0EA);
+        return const Color(0xFFE5E8D3);
       case 'delivered':
         return const Color(0xFFEDF8F0);
       case 'cancelled':

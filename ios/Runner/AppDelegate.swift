@@ -1,6 +1,8 @@
 import Flutter
 import UIKit
-import GoogleSignIn  // ← ADD THIS
+import GoogleSignIn
+import Firebase      // ← ADD THIS
+import GoogleMaps
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -8,11 +10,15 @@ import GoogleSignIn  // ← ADD THIS
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    FirebaseApp.configure()   // ← ADD THIS LINE
+    if let mapsApiKey = Bundle.main.object(forInfoDictionaryKey: "GoogleMapsAPIKey") as? String,
+       !mapsApiKey.isEmpty {
+      GMSServices.provideAPIKey(mapsApiKey)
+    }
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
-  // ← ADD THIS ENTIRE FUNCTION
   override func application(
     _ app: UIApplication,
     open url: URL,

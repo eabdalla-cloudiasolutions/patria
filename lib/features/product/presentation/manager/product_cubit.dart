@@ -1,6 +1,6 @@
 // lib/features/product/presentation/manager/product_cubit.dart
-import 'package:erb/features/product/presentation/manager/%20product_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/features/product/presentation/manager/%20product_state.dart';
 
 import '../../data/repos/product_repo.dart';
 

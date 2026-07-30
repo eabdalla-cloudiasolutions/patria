@@ -1,16 +1,20 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/home/data/apis/products_api.dart';
-import 'package:erb/features/home/data/models/product_model.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/home/data/apis/products_api.dart';
+import 'package:patria/features/home/data/models/product_model.dart';
 
 class ProductsRepo {
   final ProductsApi _api = ProductsApi();
 
-  Future<List<ProductModel>> getProducts(
-      {String? category, String? search}) async {
+  Future<List<ProductModel>> getProducts({
+    String? category,
+    String? search,
+  }) async {
     try {
-      final response =
-          await _api.getProducts(category: category, search: search);
+      final response = await _api.getProducts(
+        category: category,
+        search: search,
+      );
 
       if (response.data['data'] != null) {
         final List<dynamic> productsData = response.data['data'];

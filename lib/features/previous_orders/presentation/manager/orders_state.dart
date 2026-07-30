@@ -1,4 +1,4 @@
-import 'package:erb/features/previous_orders/data/models/order_model.dart';
+import 'package:patria/features/previous_orders/data/models/order_model.dart';
 
 abstract class OrdersState {}
 
