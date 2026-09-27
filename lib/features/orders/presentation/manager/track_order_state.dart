@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:erb/features/orders/data/models/track_order_model.dart';
+import 'package:patria/features/orders/data/models/track_order_model.dart';
 
 abstract class TrackOrderState extends Equatable {
   const TrackOrderState();
@@ -17,11 +17,10 @@ class TrackOrderLoaded extends TrackOrderState {
   final DateTime timestamp; // 👈 add this
 
   TrackOrderLoaded(this.order)
-      : timestamp = DateTime.now(); // 👈 unique every time
+    : timestamp = DateTime.now(); // 👈 unique every time
 
   @override
-  List<Object?> get props =>
-      [timestamp]; // 👈 always different = always rebuilds
+  List<Object?> get props => [timestamp]; // 👈 always different = always rebuilds
 }
 
 class TrackOrderError extends TrackOrderState {

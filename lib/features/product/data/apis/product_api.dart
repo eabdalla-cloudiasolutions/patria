@@ -1,7 +1,7 @@
 // lib/features/product/data/apis/product_api.dart
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_client.dart';
-import 'package:erb/core/network/api_endpoints.dart';
+import 'package:patria/core/network/api_client.dart';
+import 'package:patria/core/network/api_endpoints.dart';
 
 class ProductApi {
   final Dio _dio = ApiClient.instance;

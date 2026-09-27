@@ -30,11 +30,23 @@ class OfferModel {
   });
 
   factory OfferModel.fromJson(Map<String, dynamic> json) {
-    final double discountValue = (json['discountValue'] ?? 0).toDouble();
+    final discountType = json['discountType'] ?? '';
+    final discountValue = (json['discountValue'] ?? 0).toDouble();
 
     String? discountPercent;
     if (discountValue > 0) {
-      discountPercent = '-${discountValue.toInt()}%';
+      // ✅ Match by keyword, case-insensitively, instead of the exact
+      // dashboard label strings ("Percentage (%)" / "Fixed Amount (EGP)").
+      // Patria's API actually returns short lowercase values like
+      // "percentage", which never matched those exact strings — so no
+      // discount badge was ever shown even though the data was there.
+      final normalizedType = discountType.toString().toLowerCase();
+      if (normalizedType.contains('percent')) {
+        discountPercent = '-${discountValue.toInt()}%';
+      } else if (normalizedType.contains('fixed')) {
+        discountPercent = '-${discountValue.toInt()} EGP';
+      }
+      // you can add more types if needed
     }
 
     List<String> includedProducts = [];
@@ -60,8 +72,8 @@ class OfferModel {
       includedProducts: includedProducts,
       startDate: DateTime.tryParse(json['startDate'] ?? '') ?? DateTime.now(),
       endDate: DateTime.tryParse(json['endDate'] ?? '') ?? DateTime.now(),
-      discountType: json['discountType'] ?? '',
-      discountValue: discountValue,
+      discountType: discountType, // already stored
+      discountValue: discountValue, // already stored
       minOrderAmount: (json['minOrderAmount'] ?? 0).toDouble(),
       usageCount: json['usageCount'] ?? 0,
     );

@@ -5,43 +5,57 @@ import 'package:flutter_svg/svg.dart';
 class SocialButton extends StatelessWidget {
   final String label;
   final String iconPath;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   const SocialButton({
     super.key,
     required this.label,
     required this.iconPath,
-    required this.onPressed,
+    this.onPressed,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton.icon(
-      onPressed: onPressed,
+    return ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFF5F0EA),
+        backgroundColor: const Color(0xFFE5E8D3),
         minimumSize: Size(double.infinity, 44.h),
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(
-            width: 1.w,
-            color: Colors.black,
-          ),
+          side: BorderSide(width: 1.w, color: Colors.black),
         ),
         elevation: 0,
         shadowColor: Colors.transparent,
       ),
-      icon: SvgPicture.asset(iconPath, width: 24.w, height: 24.h),
-      label: Text(
-        label,
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 16.sp,
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      child: isLoading
+          ? SizedBox(
+              width: 24.w,
+              height: 24.h,
+              child: const CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3C4119)),
+              ),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(iconPath, width: 24.w, height: 24.h),
+                SizedBox(width: 12.w),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.sp,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

@@ -1,7 +1,7 @@
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const String baseUrl = 'https://admin.erb-roastery-bakery.com/api';
+  static const String baseUrl = 'https://api.patriacoffeebeans.com/api/mobile';
 
   // Auth
   static const String login = '/auth/login';
@@ -27,7 +27,7 @@ class ApiEndpoints {
   static const String profile = '/account/profile';
 
   // Offers
-  static const String activeOffers = '/offers/active'; // 👈 Add this
+  static const String activeOffers = '/offers'; // 👈 Add this
 
   static const String myOrders = '/orders/my-orders';
 
@@ -41,10 +41,12 @@ class ApiEndpoints {
 
   static const String updateProfile = '/users/profile';
 
-//User Addresses
+  //User Addresses
   static const String addresses = '/users/addresses';
   static String deleteAddress(String id) => '/users/addresses/$id';
   static String updateAddress(String id) => '/users/addresses/$id';
+  static String setDefaultAddress(String id) =>
+      '/users/addresses/$id/set-default';
 
   //Payment Card
   static const String paymentMethods = '/payment-methods';
@@ -71,5 +73,20 @@ class ApiEndpoints {
   static String updateCartItem(String id) => '/cart/update/$id'; // 👈 add this
   static String removeCartItem(String id) => '/cart/remove/$id'; // 👈 add this
 
-  static String trackOrder(String id) => '/orders/$id';
+  static String trackOrder(String id) => '/orders/$id/tracking';
+
+  // lat/lng are optional and help the backend match the zone by location.
+  // The name is still encoded with encodeComponent (spaces as %20), exactly
+  // as before, so requests without coordinates are unchanged.
+  static String zoneLookup(String name, {double? lat, double? lng}) {
+    final query = StringBuffer('/zones/lookup?name=${Uri.encodeComponent(name)}');
+    if (lat != null) query.write('&lat=$lat');
+    if (lng != null) query.write('&lng=$lng');
+    return query.toString();
+  }
+
+  static const String logSearchQuery = '/customer-search/log';
+  static const String searchHistory = '/customer-search/history';
+  static const String searchTrending = '/customer-search/trending';
+  static const String clearSearchHistory = '/customer-search/history';
 }

@@ -34,10 +34,10 @@ class CheckoutPreviewModel {
       maxPointsRedeemableThisOrder: json['maxPointsRedeemableThisOrder'] ?? 0,
       pointsToRedeemApplied: json['pointsToRedeemApplied'] ?? 0,
       pointsDiscountEGP: (json['pointsDiscountEGP'] ?? 0).toDouble(),
-      totals: CheckoutTotals.fromJson(json['totals']),
+      totals: CheckoutTotals.fromJson(json['totals'] ?? {}),
       pointsEarnedIfOrderCompleted: json['pointsEarnedIfOrderCompleted'] ?? 0,
-      redeemRule: RedeemRule.fromJson(json['rules']['redeem']),
-      earnRule: EarnRule.fromJson(json['rules']['earn']),
+      redeemRule: RedeemRule.fromJson(json['rules']?['redeem'] ?? {}),
+      earnRule: EarnRule.fromJson(json['rules']?['earn'] ?? {}),
     );
   }
 }
@@ -45,7 +45,6 @@ class CheckoutPreviewModel {
 class CheckoutTotals {
   final double subtotal;
   final double deliveryFee;
-  final double serviceFee;
   final double couponDiscount;
   final double totalBeforePoints;
   final double totalAfterPoints;
@@ -53,7 +52,6 @@ class CheckoutTotals {
   const CheckoutTotals({
     required this.subtotal,
     required this.deliveryFee,
-    required this.serviceFee,
     required this.couponDiscount,
     required this.totalBeforePoints,
     required this.totalAfterPoints,
@@ -63,7 +61,6 @@ class CheckoutTotals {
     return CheckoutTotals(
       subtotal: (json['subtotal'] ?? 0).toDouble(),
       deliveryFee: (json['deliveryFee'] ?? 0).toDouble(),
-      serviceFee: (json['serviceFee'] ?? 0).toDouble(),
       couponDiscount: (json['couponDiscount'] ?? 0).toDouble(),
       totalBeforePoints: (json['totalBeforePoints'] ?? 0).toDouble(),
       totalAfterPoints: (json['totalAfterPoints'] ?? 0).toDouble(),

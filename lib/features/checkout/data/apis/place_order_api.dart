@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_client.dart';
-import 'package:erb/core/network/api_endpoints.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/checkout/data/models/place_order_request.dart';
-import 'package:erb/features/checkout/data/models/place_order_response.dart';
+import 'package:patria/core/network/api_client.dart';
+import 'package:patria/core/network/api_endpoints.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/checkout/data/models/place_order_request.dart';
+import 'package:patria/features/checkout/data/models/place_order_response.dart';
 
 class PlaceOrderApi {
   final Dio _dio = ApiClient.instance;

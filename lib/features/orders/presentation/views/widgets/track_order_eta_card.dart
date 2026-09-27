@@ -27,9 +27,7 @@ class TrackOrderEtaCard extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 20),
             child: Image.asset('assets/images/Clock.png'),
           ),
-          SizedBox(
-            width: 8,
-          ),
+          SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +59,7 @@ class TrackOrderEtaCard extends StatelessWidget {
           // Container(
           //   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
           //   decoration: BoxDecoration(
-          //     color: const Color(0xFFF5F0EA),
+          //     color: const Color(0xFFE5E8D3),
           //     borderRadius: BorderRadius.circular(3.r),
           //     border: Border.all(color: const Color(0x194A3F33), width: 2.w),
           //   ),

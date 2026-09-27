@@ -41,27 +41,25 @@ class _TrackOrderStatusState extends State<TrackOrderStatus>
   }
 
   List<Map<String, String>> _steps(BuildContext context) => [
-        {
-          'title': 'step_order_placed'.tr(),
-          'subtitle': 'step_order_placed_sub'.tr(),
-        },
-        {
-          'title': 'step_being_prepared'.tr(),
-          'subtitle': 'step_being_prepared_sub'.tr(),
-        },
-        {
-          'title': 'step_out_for_delivery'.tr(),
-          'subtitle': 'step_out_for_delivery_sub'.tr(),
-        },
-        {
-          'title': 'step_delivered'.tr(),
-          'subtitle': 'step_delivered_sub'.tr(),
-        },
-      ];
+    {
+      'title': 'step_order_placed'.tr(),
+      'subtitle': 'step_order_placed_sub'.tr(),
+    },
+    {
+      'title': 'step_being_prepared'.tr(),
+      'subtitle': 'step_being_prepared_sub'.tr(),
+    },
+    {
+      'title': 'step_out_for_delivery'.tr(),
+      'subtitle': 'step_out_for_delivery_sub'.tr(),
+    },
+    {'title': 'step_delivered'.tr(), 'subtitle': 'step_delivered_sub'.tr()},
+  ];
 
   @override
   Widget build(BuildContext context) {
     final steps = _steps(context);
+    final lastStepIndex = steps.length - 1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,8 +78,12 @@ class _TrackOrderStatusState extends State<TrackOrderStatus>
 
         Container(
           width: double.infinity,
-          padding:
-              const EdgeInsets.only(top: 0, bottom: 12, left: 12, right: 12),
+          padding: const EdgeInsets.only(
+            top: 0,
+            bottom: 12,
+            left: 12,
+            right: 12,
+          ),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(15.r),
@@ -100,26 +102,24 @@ class _TrackOrderStatusState extends State<TrackOrderStatus>
             ),
             builder: TimelineTileBuilder.connected(
               itemCount: steps.length,
-              contentsAlign:
-                  ContentsAlign.basic, // content to the right, top-aligned
+              contentsAlign: ContentsAlign.basic,
               connectorBuilder: (_, index, __) {
                 final isDone = index < widget.currentStep;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  width: 1, // vertical line
+                  width: 1,
                   color: isDone
-                      ? const Color(0xFF6B5E4B)
+                      ? const Color(0xFF3C4119)
                       : const Color(0xFFCACBD4),
                 );
               },
               indicatorBuilder: (_, index) {
-                final isDone = index <
-                    widget.currentStep; // 👈 fixed: only fully done steps
-                final isCurrent = index == widget.currentStep;
-                final isPendingStep =
-                    widget.isPending && isCurrent; // 👈 pulse on current step
+                final isPastStep = index < widget.currentStep;
+                final isCurrentStep = index == widget.currentStep;
+                final isLastStep = index == lastStepIndex;
 
-                if (isPendingStep) {
+                // Case 1: Pending current step (order not yet completed)
+                if (isCurrentStep && widget.isPending) {
                   return AnimatedBuilder(
                     animation: _pulseController,
                     builder: (context, child) {
@@ -128,31 +128,40 @@ class _TrackOrderStatusState extends State<TrackOrderStatus>
                         height: 20,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFF6B5E4B).withOpacity(0.3),
+                          color: const Color(0xFF3C4119).withOpacity(0.3),
                         ),
                         child: Container(
-                          margin:
-                              EdgeInsets.all(4 * (1 - _pulseController.value)),
+                          margin: EdgeInsets.all(
+                            4 * (1 - _pulseController.value),
+                          ),
                           decoration: const BoxDecoration(
-                            color: Color(0xFF6B5E4B),
+                            color: Color(0xFF3C4119),
                             shape: BoxShape.circle,
                           ),
                         ),
                       );
                     },
                   );
-                } else if (isDone) {
+                }
+                // Case 2: Step is fully completed (past or final delivered step)
+                else if (isPastStep ||
+                    (isCurrentStep && !widget.isPending && isLastStep)) {
                   return Container(
                     width: 20,
                     height: 20,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF6B5E4B),
+                      color: Color(0xFF3C4119),
                       shape: BoxShape.circle,
                     ),
-                    child:
-                        const Icon(Icons.check, size: 12, color: Colors.white),
+                    child: const Icon(
+                      Icons.check,
+                      size: 12,
+                      color: Colors.white,
+                    ),
                   );
-                } else {
+                }
+                // Case 3: Future step (not reached)
+                else {
                   return const OutlinedDotIndicator(
                     size: 20,
                     color: Color(0xFFCACBD4),
@@ -161,10 +170,8 @@ class _TrackOrderStatusState extends State<TrackOrderStatus>
                 }
               },
               contentsBuilder: (_, index) {
-                final isDone = index <=
-                    widget.currentStep; // 👈 current + done = dark text
+                final isDone = index <= widget.currentStep;
                 final step = steps[index];
-                // Keep bottom padding for vertical spacing between steps
                 return Padding(
                   padding: EdgeInsets.only(left: 12.w, bottom: 16.h, top: 24.h),
                   child: Column(
@@ -230,8 +237,10 @@ class _TrackOrderStatusState extends State<TrackOrderStatus>
                   const CircleAvatar(
                     radius: 24,
                     backgroundColor: Color(0xFFF5F2ED),
-                    child:
-                        Icon(Icons.delivery_dining, color: Color(0xFF6B5E4B)),
+                    child: Icon(
+                      Icons.delivery_dining,
+                      color: Color(0xFF3C4119),
+                    ),
                   ),
                   SizedBox(width: 12.w),
                   Expanded(
@@ -259,7 +268,7 @@ class _TrackOrderStatusState extends State<TrackOrderStatus>
                             widget.riderMessage!,
                             style: TextStyle(
                               fontSize: 12.sp,
-                              color: const Color(0xFF6B5E4B),
+                              color: const Color(0xFF3C4119),
                               fontFamily: 'Montserrat',
                             ),
                           ),

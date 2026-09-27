@@ -1,14 +1,17 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/utils/launcher_utils.dart';
-import 'package:erb/features/orders/presentation/manager/track_order_bloc.dart';
-import 'package:erb/features/orders/presentation/manager/track_order_event.dart';
-import 'package:erb/features/orders/presentation/manager/track_order_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:patria/core/config/api_keys.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/utils/launcher_utils.dart';
+import 'package:patria/features/orders/presentation/manager/track_order_bloc.dart';
+import 'package:patria/features/orders/presentation/manager/track_order_event.dart';
+import 'package:patria/features/orders/presentation/manager/track_order_state.dart';
 
 import 'widgets/track_order_eta_card.dart';
 import 'widgets/track_order_status.dart';
@@ -39,9 +42,27 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
   late TrackOrderBloc _trackOrderBloc;
   Timer? _pollingTimer;
 
+  // ✅ Map
+  GoogleMapController? _mapController;
+
+  // ✅ Both locations now come from the API (customer + driver). Null = unknown.
+  LatLng? _userLocation; // customer / delivery location
+  LatLng? _driverLocation; // driver location
+
+  // ✅ Route points from Directions API
+  List<LatLng> _routePoints = [];
+  bool _isLoadingRoute = false;
+
+  // ✅ PolylinePoints instance with API key
+  late PolylinePoints _polylinePoints;
+
+  // ✅ Map can only be shown when both points are known
+  bool get _canShowMap => _userLocation != null && _driverLocation != null;
+
   @override
   void initState() {
     super.initState();
+    _polylinePoints = PolylinePoints(apiKey: googleApiKey);
     _trackOrderBloc = TrackOrderBloc()..add(LoadTrackOrder(widget.orderId));
     _startPolling();
   }
@@ -50,27 +71,138 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
   void dispose() {
     _trackOrderBloc.close();
     _pollingTimer?.cancel();
+    _mapController?.dispose();
     super.dispose();
   }
 
-  // ─── Polling every 15s ───────────────────────────────────────
+  // ✅ Update both locations from API; only rebuild/refetch when something changed
+  void _updateLocations({
+    double? customerLat,
+    double? customerLng,
+    double? driverLat,
+    double? driverLng,
+  }) {
+    LatLng? newUser;
+    LatLng? newDriver;
+
+    if (customerLat != null && customerLng != null) {
+      newUser = LatLng(customerLat, customerLng);
+    }
+    if (driverLat != null && driverLng != null) {
+      newDriver = LatLng(driverLat, driverLng);
+    }
+
+    final changed = newUser != _userLocation || newDriver != _driverLocation;
+    if (!changed) return;
+
+    setState(() {
+      _userLocation = newUser;
+      _driverLocation = newDriver;
+    });
+
+    _fitBothMarkers();
+    _getRoute();
+  }
+
+  // ✅ Fetch road route using Routes API v2
+  Future<void> _getRoute() async {
+    if (_userLocation == null || _driverLocation == null) return;
+
+    setState(() => _isLoadingRoute = true);
+
+    try {
+      final response = await _polylinePoints.getRouteBetweenCoordinatesV2(
+        request: RoutesApiRequest(
+          origin: PointLatLng(
+            _driverLocation!.latitude,
+            _driverLocation!.longitude,
+          ),
+          destination: PointLatLng(
+            _userLocation!.latitude,
+            _userLocation!.longitude,
+          ),
+          travelMode: TravelMode.driving,
+        ),
+      );
+
+      if (response.routes.isNotEmpty && mounted) {
+        final points = _polylinePoints.convertToLegacyResult(response).points;
+        setState(() {
+          _routePoints = points
+              .map((p) => LatLng(p.latitude, p.longitude))
+              .toList();
+        });
+      }
+    } catch (_) {
+      // fallback to straight line
+    } finally {
+      if (mounted) setState(() => _isLoadingRoute = false);
+    }
+  }
+
+  // ✅ Fit map to show both user and driver
+  void _fitBothMarkers() {
+    if (_mapController == null ||
+        _userLocation == null ||
+        _driverLocation == null)
+      return;
+
+    final bounds = LatLngBounds(
+      southwest: LatLng(
+        _userLocation!.latitude < _driverLocation!.latitude
+            ? _userLocation!.latitude
+            : _driverLocation!.latitude,
+        _userLocation!.longitude < _driverLocation!.longitude
+            ? _userLocation!.longitude
+            : _driverLocation!.longitude,
+      ),
+      northeast: LatLng(
+        _userLocation!.latitude > _driverLocation!.latitude
+            ? _userLocation!.latitude
+            : _driverLocation!.latitude,
+        _userLocation!.longitude > _driverLocation!.longitude
+            ? _userLocation!.longitude
+            : _driverLocation!.longitude,
+      ),
+    );
+
+    _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 80));
+  }
+
+  // ✅ Road-following dashed polyline
+  Set<Polyline> _buildPolylines() {
+    if (_userLocation == null || _driverLocation == null) return {};
+
+    final points = _routePoints.isNotEmpty
+        ? _routePoints
+        : [_driverLocation!, _userLocation!];
+
+    return {
+      Polyline(
+        polylineId: const PolylineId('route'),
+        points: points,
+        color: const Color(0xFF28293D),
+        width: 2,
+        patterns: [PatternItem.dash(20), PatternItem.gap(10)],
+      ),
+    };
+  }
+
   void _startPolling() {
-    _pollingTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (mounted) {
         _trackOrderBloc.add(RefreshTrackOrder(widget.orderId));
       }
     });
   }
 
-  // ─── Navigation ───────────────────────────────────────────────
   void _goToHome() {
-    Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil(
-      Routes.baseLayer,
-      (route) => false,
-    );
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).pushNamedAndRemoveUntil(Routes.baseLayer, (route) => false);
   }
 
-  // ─── Get Help Sheet ───────────────────────────────────────────
   void _showGetHelpSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -105,8 +237,11 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.black, width: 1.5),
                     ),
-                    child:
-                        const Icon(Icons.close, size: 18, color: Colors.black),
+                    child: const Icon(
+                      Icons.close,
+                      size: 18,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ],
@@ -122,7 +257,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 14.h),
-                      backgroundColor: const Color(0xFFF5F0EA),
+                      backgroundColor: const Color(0xFFE5E8D3),
                       side: const BorderSide(color: Color(0xFFE5E5E5)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.r),
@@ -136,7 +271,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                     label: Text(
                       'message_us'.tr(),
                       style: TextStyle(
-                        color: const Color(0xFF6B5E4B),
+                        color: const Color(0xFF3C4119),
                         fontSize: 16,
                         fontFamily: 'Montserrat',
                         fontWeight: FontWeight.w600,
@@ -154,7 +289,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       padding: EdgeInsets.symmetric(vertical: 14.h),
-                      backgroundColor: const Color(0xFF6B5E4B),
+                      backgroundColor: const Color(0xFF3C4119),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.r),
                       ),
@@ -180,6 +315,91 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
               ],
             ),
             SizedBox(height: 16.h),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ✅ Build tracking map (only called when both locations are known)
+  Widget _buildTrackingMap() {
+    final initialTarget = _userLocation!;
+
+    final Set<Marker> markers = {
+      Marker(
+        markerId: const MarkerId('driver'),
+        position: _driverLocation!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        infoWindow: InfoWindow(title: 'driver'.tr()),
+      ),
+      Marker(
+        markerId: const MarkerId('user'),
+        position: _userLocation!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: InfoWindow(title: 'your_location'.tr()),
+      ),
+    };
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16.r),
+      child: SizedBox(
+        height: 220.h,
+        child: Stack(
+          children: [
+            GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: initialTarget,
+                zoom: 20,
+              ),
+              onMapCreated: (controller) {
+                _mapController = controller;
+                _fitBothMarkers();
+              },
+              markers: markers,
+              polylines: _buildPolylines(),
+              zoomControlsEnabled: false,
+              myLocationButtonEnabled: false,
+              mapToolbarEnabled: false,
+            ),
+
+            // ✅ Loading indicator while fetching route
+            if (_isLoadingRoute)
+              Positioned(
+                top: 8.h,
+                right: 8.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.r),
+                    boxShadow: const [
+                      BoxShadow(color: Color(0x1A000000), blurRadius: 4),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 12.w,
+                        height: 12.h,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF3C4119),
+                        ),
+                      ),
+                      SizedBox(width: 6.w),
+                      Text(
+                        'loading_route'.tr(),
+                        style: TextStyle(
+                          fontSize: 10.sp,
+                          fontFamily: 'Montserrat',
+                          color: const Color(0xFF3C4119),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -217,7 +437,19 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
             ),
             centerTitle: true,
           ),
-          body: BlocBuilder<TrackOrderBloc, TrackOrderState>(
+          body: BlocConsumer<TrackOrderBloc, TrackOrderState>(
+            listener: (context, state) {
+              // ✅ Pull user (customer) + driver locations from the API
+              if (state is TrackOrderLoaded) {
+                final order = state.order;
+                _updateLocations(
+                  customerLat: order.customerLat,
+                  customerLng: order.customerLng,
+                  driverLat: order.driverLat,
+                  driverLng: order.driverLng,
+                );
+              }
+            },
             builder: (context, state) {
               if (state is TrackOrderLoading) {
                 return const Center(child: CircularProgressIndicator());
@@ -228,8 +460,11 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 48, color: Color(0xFFCACBD4)),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Color(0xFFCACBD4),
+                      ),
                       SizedBox(height: 12.h),
                       Text(
                         state.message,
@@ -245,7 +480,7 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                         onPressed: () =>
                             _trackOrderBloc.add(LoadTrackOrder(widget.orderId)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6B5E4B),
+                          backgroundColor: const Color(0xFF3C4119),
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(5.r),
@@ -263,8 +498,9 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
 
               if (state is TrackOrderLoaded) {
                 final order = state.order;
+
                 return RefreshIndicator(
-                  color: const Color(0xFF6B5E4B),
+                  color: const Color(0xFF3C4119),
                   onRefresh: () async {
                     _trackOrderBloc.add(RefreshTrackOrder(widget.orderId));
                     await Future.delayed(const Duration(milliseconds: 500));
@@ -276,11 +512,19 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: 16.h),
+
+                        // ✅ Only show the map when BOTH customer & driver
+                        // coordinates are available (no const fallback).
+                        if (_canShowMap) ...[
+                          _buildTrackingMap(),
+                          SizedBox(height: 16.h),
+                        ],
+
                         TrackOrderEtaCard(
                           estimatedArrival:
                               order.estimatedArrival?.isNotEmpty == true
-                                  ? order.estimatedArrival!
-                                  : widget.estimatedArrival,
+                              ? order.estimatedArrival!
+                              : widget.estimatedArrival,
                         ),
                         SizedBox(height: 16.h),
                         TrackOrderStatus(
@@ -288,26 +532,6 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
                           isPending: order.currentStep < 3,
                         ),
                         SizedBox(height: 16.h),
-                        // Container(
-                        //   width: double.infinity,
-                        //   padding: EdgeInsets.symmetric(
-                        //       horizontal: 16.w, vertical: 10.h),
-                        //   decoration: BoxDecoration(
-                        //     color: const Color(0xFFF5F0EA),
-                        //     borderRadius: BorderRadius.circular(8.r),
-                        //   ),
-                        //   child: Text(
-                        //     order.status,
-                        //     textAlign: TextAlign.center,
-                        //     style: TextStyle(
-                        //       color: const Color(0xFF6B5E4B),
-                        //       fontSize: 14.sp,
-                        //       fontFamily: 'Montserrat',
-                        //       fontWeight: FontWeight.w600,
-                        //     ),
-                        //   ),
-                        // ),
-                        // SizedBox(height: 24.h),
                         _buildGetHelpButton(context),
                         SizedBox(height: 120.h),
                       ],
@@ -331,20 +555,20 @@ class _TrackOrderScreenState extends State<TrackOrderScreen> {
       child: OutlinedButton.icon(
         onPressed: () => _showGetHelpSheet(context),
         style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFF6B5E4B)),
+          side: const BorderSide(color: Color(0xFF3C4119)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.r),
           ),
         ),
         icon: const Icon(
           Icons.help_outline,
-          color: Color(0xFF6B5E4B),
+          color: Color(0xFF3C4119),
           size: 18,
         ),
         label: Text(
           'get_help'.tr(),
           style: TextStyle(
-            color: const Color(0xFF6B5E4B),
+            color: const Color(0xFF3C4119),
             fontSize: 16.sp,
             fontFamily: 'Montserrat',
             fontWeight: FontWeight.w600,

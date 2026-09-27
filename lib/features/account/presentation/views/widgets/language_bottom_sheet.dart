@@ -29,8 +29,12 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding:
-          EdgeInsets.only(top: 20.h, left: 20.w, right: 20.w, bottom: 32.h),
+      padding: EdgeInsets.only(
+        top: 20.h,
+        left: 20.w,
+        right: 20.w,
+        bottom: 32.h,
+      ),
       decoration: ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
@@ -101,7 +105,7 @@ class _LanguageBottomSheetState extends State<LanguageBottomSheet> {
                 Navigator.of(context).pop(); // ✅ only pop, no setLocale here
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6B5E4B),
+                backgroundColor: const Color(0xFF3C4119),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),
@@ -161,11 +165,11 @@ class _LanguageOption extends StatelessWidget {
               borderRadius: BorderRadius.circular(5.r),
               border: Border.all(
                 color: selected
-                    ? const Color(0xFF6B5E4B)
+                    ? const Color(0xFF3C4119)
                     : const Color(0xFFCACBD4),
                 width: 1.5.w,
               ),
-              color: selected ? const Color(0xFF6B5E4B) : Colors.white,
+              color: selected ? const Color(0xFF3C4119) : Colors.white,
             ),
             child: selected
                 ? const Icon(Icons.check, color: Colors.white, size: 14)

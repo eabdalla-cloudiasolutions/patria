@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_client.dart';
-import 'package:erb/core/network/api_endpoints.dart';
-import 'package:erb/features/previous_orders/data/models/order_model.dart';
+import 'package:patria/core/network/api_client.dart';
+import 'package:patria/core/network/api_endpoints.dart';
+import 'package:patria/features/previous_orders/data/models/order_model.dart';
 
 class OrdersApi {
   Future<List<OrderModel>> getMyOrders() async {

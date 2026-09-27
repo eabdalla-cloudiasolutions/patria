@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_client.dart';
-import 'package:erb/core/network/api_endpoints.dart';
-import 'package:erb/features/auth/data/models/login_request_model.dart';
-import 'package:erb/features/auth/data/models/register_request_model.dart';
+import 'package:patria/core/network/api_client.dart';
+import 'package:patria/core/network/api_endpoints.dart';
+import 'package:patria/features/auth/data/models/login_request_model.dart';
+import 'package:patria/features/auth/data/models/register_request_model.dart';
 
 class AuthApi {
   final Dio _dio = ApiClient.instance;
@@ -27,10 +27,7 @@ class AuthApi {
   Future<Response> verifyOtp(String phone, String code) async {
     return await _dio.post(
       ApiEndpoints.verifyOtp,
-      data: {
-        'phone': phone,
-        'code': code,
-      },
+      data: {'phone': phone, 'code': code},
     );
   }
 
@@ -38,22 +35,25 @@ class AuthApi {
     required String name,
     required String phone,
     String? dateOfBirth,
+    bool? pushNotifications,
+    bool? newsletter,
   }) async {
     return await _dio.put(
       ApiEndpoints.updateProfile,
       data: {
         'name': name,
         'phone': phone,
-        if (dateOfBirth != null) 'dateOfBirth': dateOfBirth, // ✅ optional
+        'dateOfBirth': ?dateOfBirth,
+        'preferences': {
+          'notifications': ?pushNotifications,
+          'newsletter': ?newsletter,
+        },
       },
     );
   }
 
   Future<Response> forgotPassword(String phone) async {
-    return await _dio.post(
-      ApiEndpoints.forgotPassword,
-      data: {'phone': phone},
-    );
+    return await _dio.post(ApiEndpoints.forgotPassword, data: {'phone': phone});
   }
 
   Future<Response> resetPassword({
@@ -63,11 +63,15 @@ class AuthApi {
   }) async {
     return await _dio.post(
       ApiEndpoints.resetPassword,
-      data: {
-        'phone': phone,
-        'code': code,
-        'newPassword': newPassword,
-      },
+      data: {'phone': phone, 'code': code, 'newPassword': newPassword},
     );
+  }
+
+  // ✅ Get user profile (including date of birth)
+  Future<Map<String, dynamic>> getUserProfile() async {
+    final response = await _dio.get(
+      ApiEndpoints.updateProfile,
+    ); // assuming you have this endpoint
+    return response.data;
   }
 }

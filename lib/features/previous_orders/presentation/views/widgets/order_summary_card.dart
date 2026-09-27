@@ -1,6 +1,7 @@
-import 'package:erb/features/previous_orders/data/models/order_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/previous_orders/data/models/order_model.dart';
 
 class OrderSummaryCard extends StatelessWidget {
   final OrderModel order;
@@ -19,7 +20,7 @@ class OrderSummaryCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Order Summary',
+            'order_summary'.tr(),
             style: TextStyle(
               fontSize: 14.sp,
               fontFamily: 'Montserrat',
@@ -27,11 +28,10 @@ class OrderSummaryCard extends StatelessWidget {
             ),
           ),
           SizedBox(height: 12.h),
-          _summaryRow('Subtotal', order.subtotal), // sub total
-          _summaryRow('Delivery fee', 25.0), // fetch from order if available
-          _summaryRow('Service fee', 32.0),
+          _summaryRow('subtotal'.tr(), order.subtotal),
+          _summaryRow('delivery_fee'.tr(), order.deliveryFee),
           Divider(color: const Color(0xFFCACBD4), height: 16.h),
-          _summaryRow('Total', order.total, isTotal: true),
+          _summaryRow('total'.tr(), order.total, isTotal: true),
         ],
       ),
     );
@@ -46,8 +46,9 @@ class OrderSummaryCard extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color:
-                  isTotal ? const Color(0xFF333333) : const Color(0xFF23252A),
+              color: isTotal
+                  ? const Color(0xFF333333)
+                  : const Color(0xFF23252A),
               fontSize: 14.sp,
               fontFamily: 'Montserrat',
               fontWeight: isTotal ? FontWeight.w600 : FontWeight.w400,
@@ -57,12 +58,14 @@ class OrderSummaryCard extends StatelessWidget {
             TextSpan(
               children: [
                 TextSpan(
-                    text: 'EGP ',
-                    style: TextStyle(fontWeight: FontWeight.w400)),
+                  text: 'egp'.tr(),
+                  style: const TextStyle(fontWeight: FontWeight.w400),
+                ),
                 TextSpan(
                   text: amount.toStringAsFixed(2),
                   style: TextStyle(
-                      fontWeight: isTotal ? FontWeight.w600 : FontWeight.w600),
+                    fontWeight: isTotal ? FontWeight.w600 : FontWeight.w600,
+                  ),
                 ),
               ],
             ),

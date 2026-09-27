@@ -1,16 +1,19 @@
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/services/user_service.dart';
-import 'package:erb/core/widgets/delete_overlay.dart';
-import 'package:erb/core/widgets/empty_state_widget.dart';
-import 'package:erb/features/account/data/apis/addresses_api.dart';
-import 'package:erb/features/account/data/models/address_model.dart';
-import 'package:erb/features/account/presentation/manager/saved_address/addresses_bloc.dart';
-import 'package:erb/features/account/presentation/manager/saved_address/addresses_event.dart';
-import 'package:erb/features/account/presentation/manager/saved_address/addresses_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/services/user_service.dart';
+import 'package:patria/core/widgets/delete_overlay.dart';
+import 'package:patria/core/widgets/empty_state_widget.dart';
+import 'package:patria/features/account/data/apis/addresses_api.dart';
+import 'package:patria/features/account/data/models/address_model.dart';
+import 'package:patria/features/account/presentation/manager/saved_address/addresses_bloc.dart';
+import 'package:patria/features/account/presentation/manager/saved_address/addresses_event.dart';
+import 'package:patria/features/account/presentation/manager/saved_address/addresses_state.dart';
+import 'package:patria/features/checkout/presentation/views/new_address_screen.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SavedAddressesScreen extends StatefulWidget {
@@ -34,13 +37,12 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _checkLoginStatus(); // refresh after returning from login
+    _checkLoginStatus();
   }
 
   Future<void> _checkLoginStatus() async {
     final token = await _userService.getUserToken();
-    final userEmail = await _userService.getUserEmail();
-    final loggedIn = token.isNotEmpty && userEmail.isNotEmpty;
+    final loggedIn = token.isNotEmpty;
 
     if (mounted) {
       setState(() {
@@ -50,7 +52,6 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
     }
   }
 
-  // Color helpers (unchanged)
   Color _getLabelColor(String label) {
     switch (label.toLowerCase()) {
       case 'home':
@@ -58,7 +59,7 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
       case 'work':
         return const Color(0xFF3574FF);
       default:
-        return const Color(0xFF6B5E4B);
+        return const Color(0xFF3C4119);
     }
   }
 
@@ -69,7 +70,7 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
       case 'work':
         return const Color(0xFFEDF4FB);
       default:
-        return const Color(0xFFF5F0EA);
+        return const Color(0xFFE5E8D3);
     }
   }
 
@@ -102,20 +103,20 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
           centerTitle: true,
         ),
         body: EmptyStateWidget(
-          imagePath: 'assets/images/Group.png', // use your own asset
+          imagePath: 'assets/images/Empty Address.png',
           title: 'no_addresses'.tr(),
           subtitle: 'please_sign_in_to_view_addresses'.tr(),
           buttonText: 'sign_in'.tr(),
           onButtonPressed: () {
-            Navigator.of(context, rootNavigator: true)
-                .pushNamed(Routes.splashScreen)
-                .then((_) => _checkLoginStatus());
+            Navigator.of(
+              context,
+              rootNavigator: true,
+            ).pushNamed(Routes.splashScreen).then((_) => _checkLoginStatus());
           },
         ),
       );
     }
 
-    // Logged-in user – show the original BLoC content
     return BlocProvider(
       create: (_) => AddressesBloc()..add(LoadAddresses()),
       child: Scaffold(
@@ -164,12 +165,19 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline,
-                        size: 48, color: Color(0xFFCACBD4)),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Color(0xFFCACBD4),
+                    ),
                     SizedBox(height: 12.h),
-                    Text(state.message,
-                        style: TextStyle(
-                            color: const Color(0xFF8B8B8B), fontSize: 14.sp)),
+                    Text(
+                      state.message,
+                      style: TextStyle(
+                        color: const Color(0xFF8B8B8B),
+                        fontSize: 14.sp,
+                      ),
+                    ),
                     SizedBox(height: 12.h),
                     ElevatedButton(
                       onPressed: () =>
@@ -183,15 +191,16 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
 
             if (state is AddressesLoaded && state.addresses.isEmpty) {
               return EmptyStateWidget(
-                imagePath: 'assets/images/Group.png', // use your own asset
+                imagePath: 'assets/images/Group.png',
                 title: 'no_addresses'.tr(),
                 subtitle: 'add_delivery_address'.tr(),
                 buttonText: 'add_new_address'.tr(),
                 onButtonPressed: () async {
-                  final result =
-                      await Navigator.of(context, rootNavigator: true)
-                          .pushNamed(Routes.newAddressScreen);
-                  if (result != null) {
+                  // ✅ Open NewAddressScreen first
+                  await Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(builder: (_) => const NewAddressScreen()),
+                  );
+                  if (context.mounted) {
                     context.read<AddressesBloc>().add(LoadAddresses());
                   }
                 },
@@ -211,7 +220,11 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                         itemBuilder: (_, index) {
                           final address = state.addresses[index];
                           return _buildAddressCard(
-                              context, address, index, state.addresses);
+                            context,
+                            address,
+                            index,
+                            state.addresses,
+                          );
                         },
                       ),
                     ),
@@ -230,9 +243,12 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
     );
   }
 
-  // All the card and button methods remain exactly as they were (unchanged)
-  Widget _buildAddressCard(BuildContext context, AddressModel address,
-      int index, List<AddressModel> allAddresses) {
+  Widget _buildAddressCard(
+    BuildContext context,
+    AddressModel address,
+    int index,
+    List<AddressModel> allAddresses,
+  ) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -245,7 +261,7 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
         children: [
           _buildAddressInfo(address),
           SizedBox(height: 14.h),
-          Divider(color: Color(0xFFCACBD4), height: 1.h),
+          Divider(color: const Color(0xFFCACBD4), height: 1.h),
           SizedBox(height: 14.h),
           _buildActionButtons(context, address, index, allAddresses),
         ],
@@ -265,7 +281,7 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
         child: const Icon(
           Icons.location_on_outlined,
           size: 18,
-          color: Color(0xFF6B5E4B),
+          color: Color(0xFF3C4119),
         ),
       ),
       title: Column(
@@ -292,7 +308,7 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
           Text(
             address.street,
             style: TextStyle(
-              color: Color(0xFF28293D),
+              color: const Color(0xFF28293D),
               fontSize: 13.sp,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w600,
@@ -304,21 +320,21 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            address.city,
-            style: TextStyle(
-              color: Color(0xFF515151),
-              fontSize: 12.sp,
-              fontFamily: 'Montserrat',
-              fontWeight: FontWeight.w400,
-              letterSpacing: 0.24,
-            ),
-          ),
+          // Text(
+          //   address.city,
+          //   style: TextStyle(
+          //     color: const Color(0xFF515151),
+          //     fontSize: 12.sp,
+          //     fontFamily: 'Montserrat',
+          //     fontWeight: FontWeight.w400,
+          //     letterSpacing: 0.24,
+          //   ),
+          // ),
           SizedBox(height: 2.h),
           Text(
-            address.area,
+            address.zone,
             style: TextStyle(
-              color: Color(0xFF8B8B8B),
+              color: const Color(0xFF8B8B8B),
               fontSize: 10.sp,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w400,
@@ -330,32 +346,87 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, AddressModel address,
-      int index, List<AddressModel> allAddresses) {
+  Widget _buildActionButtons(
+    BuildContext context,
+    AddressModel address,
+    int index,
+    List<AddressModel> allAddresses,
+  ) {
     return Row(
       children: [
         if (!address.isDefault) ...[
           Expanded(
             child: GestureDetector(
-              onTap: () {
-                // TODO: integrate set default API
+              onTap: () async {
+                try {
+                  await AddressesApi().setDefaultAddress(address.id);
+                  if (context.mounted) {
+                    context.read<AddressesBloc>().add(LoadAddresses());
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'address_set_as_default'.tr(),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        backgroundColor: const Color(0xFF3C4119),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          left: 16.w,
+                          right: 16.w,
+                          bottom: 16.h,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    final message = e is DioException
+                        ? ApiErrorHandler.handle(e)
+                        : e.toString();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(message),
+                        backgroundColor: const Color(0xFFC90000),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          left: 16.w,
+                          right: 16.w,
+                          bottom: 16.h,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
+                      ),
+                    );
+                  }
+                }
               },
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EA),
+                  color: const Color(0xFFE5E8D3),
                   borderRadius: BorderRadius.circular(5.r),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.star_outline,
-                        size: 16, color: Color(0xFF6B5E4B)),
+                    const Icon(
+                      Icons.star_outline,
+                      size: 16,
+                      color: Color(0xFF3C4119),
+                    ),
                     SizedBox(width: 6.w),
                     Text(
                       'set_as_default'.tr(),
                       style: TextStyle(
-                        color: Color(0xFF6B5E4B),
+                        color: const Color(0xFF3C4119),
                         fontSize: 12.sp,
                         fontFamily: 'Montserrat',
                         fontWeight: FontWeight.w600,
@@ -372,13 +443,11 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
         // Edit button
         GestureDetector(
           onTap: () async {
-            final result = await Navigator.of(
-              context,
-              rootNavigator: true,
-            ).pushNamed(
-              Routes.editAddress,
-              arguments: {'address': address.toJson()},
-            );
+            final result = await Navigator.of(context, rootNavigator: true)
+                .pushNamed(
+                  Routes.editAddress,
+                  arguments: {'address': address.toJson()},
+                );
             if (result != null) {
               context.read<AddressesBloc>().add(LoadAddresses());
             }
@@ -387,14 +456,14 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
             padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
             decoration: ShapeDecoration(
               shape: RoundedRectangleBorder(
-                side: const BorderSide(color: Color(0xFF6B5E4B)),
+                side: const BorderSide(color: Color(0xFF3C4119)),
                 borderRadius: BorderRadius.circular(5),
               ),
             ),
             child: Text(
               'edit'.tr(),
               style: TextStyle(
-                color: Color(0xFF6B5E4B),
+                color: const Color(0xFF3C4119),
                 fontSize: 12.sp,
                 fontFamily: 'Montserrat',
                 fontWeight: FontWeight.w600,
@@ -409,10 +478,9 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
           onTap: () async {
             await ConfirmationBottomSheet.show(
               context: context,
-              title: "Are you sure you want to delete this address?",
-              subtitle:
-                  "This action cannot be undone. This address will be permanently deleted.",
-              confirmText: "Delete Address",
+              title: "delete_address_message".tr(),
+              subtitle: "delete_address_subtitle".tr(),
+              confirmText: "delete_address".tr(),
               cancelText: "cancel".tr(),
               onConfirm: () async {
                 try {
@@ -421,18 +489,45 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                     context.read<AddressesBloc>().add(LoadAddresses());
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('address_deleted_successfully'.tr()),
-                        backgroundColor: const Color(0xFF6B5E4B),
+                        content: Text(
+                          'address_deleted_successfully'.tr(),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        backgroundColor: const Color(0xFF3C4119),
                         duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          left: 16.w,
+                          right: 16.w,
+                          bottom: 16.h,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
                       ),
                     );
                   }
                 } catch (e) {
                   if (context.mounted) {
+                    final message = e is DioException
+                        ? ApiErrorHandler.handle(e)
+                        : e.toString();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(e.toString()),
-                        backgroundColor: const Color(0xFFE53935),
+                        content: Text(message),
+                        backgroundColor: const Color(0xFFC90000),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        margin: EdgeInsets.only(
+                          left: 16.w,
+                          right: 16.w,
+                          bottom: 16.h,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
                       ),
                     );
                   }
@@ -444,12 +539,13 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xfffc90000),
+              color: const Color(0xFFC90000),
               borderRadius: BorderRadius.circular(8.r),
             ),
-            child: const Icon(
-              Icons.delete_outline,
-              size: 16,
+            child: Image.asset(
+              "assets/images/trash-option.png",
+              height: 16,
+              width: 16,
               color: Colors.white,
             ),
           ),
@@ -488,14 +584,17 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
       height: 56.h,
       child: ElevatedButton.icon(
         onPressed: () async {
-          final result = await Navigator.of(context, rootNavigator: true)
-              .pushNamed(Routes.newAddressScreen);
-          if (result != null) {
+          // ✅ Open NewAddressScreen first (map screen)
+          await Navigator.of(
+            context,
+            rootNavigator: true,
+          ).push(MaterialPageRoute(builder: (_) => const NewAddressScreen()));
+          if (context.mounted) {
             context.read<AddressesBloc>().add(LoadAddresses());
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6B5E4B),
+          backgroundColor: const Color(0xFF3C4119),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.r),
           ),

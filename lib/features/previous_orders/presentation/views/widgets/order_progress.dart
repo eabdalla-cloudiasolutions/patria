@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -8,13 +9,19 @@ class OrderProgress extends StatelessWidget {
 
   int get _activeStep {
     switch (status.toLowerCase()) {
-      case 'active':
       case 'pending':
-        return 1;
+        return 0; // Order Placed only
+      case 'confirmed':
+        return 1; // Order Placed + Preparing
+      case 'preparing':
+        return 1; // Order Placed + Preparing
+      case 'out for delivery':
+      case 'on the way':
+        return 2; // + On the Way
       case 'delivered':
-        return 3;
+        return 3; // All steps
       case 'cancelled':
-        return -1;
+        return -1; // Nothing
       default:
         return 0;
     }
@@ -24,22 +31,22 @@ class OrderProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     final steps = [
       {
-        'title': 'Order Placed',
+        'title': 'order_placed'.tr(),
         'activeImage': 'assets/images/order_placed_active.png',
         'inactiveImage': 'assets/images/order_placed_inactive.png',
       },
       {
-        'title': 'Preparing',
+        'title': 'preparing'.tr(),
         'activeImage': 'assets/images/preparing_active.png',
         'inactiveImage': 'assets/images/preparing_inactive.png',
       },
       {
-        'title': 'On the Way',
+        'title': 'on_the_way'.tr(),
         'activeImage': 'assets/images/on_the_way_active.png',
         'inactiveImage': 'assets/images/on_the_way_inactive.png',
       },
       {
-        'title': 'Delivered',
+        'title': 'delivered'.tr(),
         'activeImage': 'assets/images/delivered_active.png',
         'inactiveImage': 'assets/images/delivered_inactive.png',
       },
@@ -68,12 +75,12 @@ class OrderProgress extends StatelessWidget {
                       height: circleSize,
                       decoration: BoxDecoration(
                         color: _activeStep >= i
-                            ? const Color(0xFF6B5E4B)
+                            ? const Color(0xFF3C4119)
                             : Colors.white,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: _activeStep >= i
-                              ? const Color(0xFF6B5E4B)
+                              ? const Color(0xFF3C4119)
                               : const Color(0xFFE5E5E5),
                           width: 1,
                         ),
@@ -96,7 +103,7 @@ class OrderProgress extends StatelessWidget {
                     child: Container(
                       height: 2,
                       color: _activeStep > i
-                          ? const Color(0xFF6B5E4B)
+                          ? const Color(0xFF3C4119)
                           : const Color(0xFFCBBFA8),
                     ),
                   ),

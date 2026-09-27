@@ -1,7 +1,7 @@
-import 'package:erb/features/home/data/apis/categories_api.dart';
-import 'package:erb/features/home/presentation/manager/categories_event.dart';
-import 'package:erb/features/home/presentation/manager/categories_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/features/home/data/apis/categories_api.dart';
+import 'package:patria/features/home/presentation/manager/categories_event.dart';
+import 'package:patria/features/home/presentation/manager/categories_state.dart';
 
 class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
   final CategoriesApi _api = CategoriesApi();

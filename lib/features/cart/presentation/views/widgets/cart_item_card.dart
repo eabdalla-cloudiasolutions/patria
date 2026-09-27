@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:patria/core/widgets/safe_network_image.dart';
 
 class CartItemCard extends StatelessWidget {
   final String name;
@@ -13,6 +13,8 @@ class CartItemCard extends StatelessWidget {
   final VoidCallback onDecrease;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final String? specialRequests;
+  final String? selectedVariants;
 
   const CartItemCard({
     super.key,
@@ -24,6 +26,8 @@ class CartItemCard extends StatelessWidget {
     required this.onDecrease,
     required this.onEdit,
     required this.onDelete,
+    this.specialRequests,
+    this.selectedVariants,
   });
 
   @override
@@ -41,28 +45,23 @@ class CartItemCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Image + Info
           Expanded(
             child: Row(
               children: [
-                // Image
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4.r),
+                  borderRadius: BorderRadius.circular(8.r),
                   child: SafeNetworkImage(
                     imageUrl: imageUrl,
-                    width: 70.w,
-                    height: 70.h,
+                    width: 75.w,
+                    height: 75.h,
                     fit: BoxFit.fill,
                   ),
                 ),
                 SizedBox(width: 8.w),
-
-                // Name + Edit + Price
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Name
                       Text(
                         name,
                         style: TextStyle(
@@ -76,8 +75,6 @@ class CartItemCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
-
-                      // Edit button
                       GestureDetector(
                         onTap: onEdit,
                         child: Row(
@@ -91,7 +88,7 @@ class CartItemCard extends StatelessWidget {
                             Text(
                               'edit'.tr(),
                               style: TextStyle(
-                                color: const Color(0xFF6B5E4B),
+                                color: const Color(0xFF3C4119),
                                 fontSize: 12.sp,
                                 fontFamily: 'Montserrat',
                                 fontWeight: FontWeight.w600,
@@ -102,9 +99,46 @@ class CartItemCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      SizedBox(height: 14.h),
 
-                      // Price
+                      // ✅ selectedVariants — both SizedBox and Text inside if
+                      if (selectedVariants != null &&
+                          selectedVariants!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          selectedVariants!,
+                          style: TextStyle(
+                            color: const Color(0xFF8B8B8B),
+                            fontSize: 11,
+                            fontFamily: 'Montserrat',
+                            fontWeight: FontWeight.w400,
+                            height: 1.40,
+                            letterSpacing: 0.22,
+                          ),
+                        ),
+                      ],
+
+                      // ✅ specialRequests — both SizedBox and Text inside if
+                      if (specialRequests != null &&
+                          specialRequests!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        SizedBox(
+                          width: 134.w,
+                          child: Text(
+                            specialRequests!,
+                            maxLines: 3,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 11,
+                              fontFamily: 'Montserrat',
+                              fontWeight: FontWeight.w400,
+                              height: 1.40,
+                              letterSpacing: 0.22,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      SizedBox(height: 14.h),
                       Text.rich(
                         TextSpan(
                           children: [
@@ -137,8 +171,6 @@ class CartItemCard extends StatelessWidget {
               ],
             ),
           ),
-
-          // Quantity controller (minus/plus) – minus becomes delete when quantity == 1
           Container(
             padding: const EdgeInsets.all(8),
             decoration: ShapeDecoration(
@@ -149,7 +181,6 @@ class CartItemCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // Minus button (delete when quantity == 1)
                 GestureDetector(
                   onTap: quantity == 1 ? onDelete : onDecrease,
                   child: Container(
@@ -160,17 +191,29 @@ class CartItemCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(3.r),
                       ),
                     ),
-                    child: Icon(
-                      quantity == 1 ? Icons.delete_outline : Icons.remove,
-                      size: 14,
-                      color: quantity == 1
-                          ? Colors.red
-                          : Color.fromARGB(255, 17, 16, 14),
-                    ),
+                    child: quantity == 1
+                        ? Image.asset(
+                            'assets/images/trash-option.png',
+                            height: 14,
+                            width: 14,
+                          )
+                        : Icon(
+                            Icons.remove,
+                            size: 14,
+                            color: quantity == 1
+                                ? Colors.red
+                                : const Color.fromARGB(255, 17, 16, 14),
+                          ),
+                    //  Icon(
+                    //   quantity == 1 ? Icons.delete_outline : Icons.remove,
+                    //   size: 14,
+                    //   color: quantity == 1
+                    //       ? Colors.red
+                    //       : const Color.fromARGB(255, 17, 16, 14),
+                    // ),
                   ),
                 ),
                 SizedBox(width: 12.w),
-
                 Text(
                   '$quantity',
                   style: TextStyle(
@@ -182,8 +225,6 @@ class CartItemCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 12.w),
-
-                // Plus button
                 GestureDetector(
                   onTap: onIncrease,
                   child: Container(
@@ -197,7 +238,7 @@ class CartItemCard extends StatelessWidget {
                     child: const Icon(
                       Icons.add,
                       size: 14,
-                      color: Color(0xFF6B5E4B),
+                      color: Color(0xFF3C4119),
                     ),
                   ),
                 ),

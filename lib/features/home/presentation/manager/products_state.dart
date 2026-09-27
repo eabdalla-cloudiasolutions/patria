@@ -1,4 +1,4 @@
-import 'package:erb/features/home/data/models/product_model.dart';
+import 'package:patria/features/home/data/models/product_model.dart';
 
 abstract class ProductsState {}
 
@@ -10,10 +10,7 @@ class ProductsLoaded extends ProductsState {
   final List<ProductModel> products;
   final String selectedCategory;
 
-  ProductsLoaded({
-    required this.products,
-    this.selectedCategory = 'All',
-  });
+  ProductsLoaded({required this.products, this.selectedCategory = 'All'});
 
   ProductsLoaded copyWith({
     List<ProductModel>? products,

@@ -1,12 +1,16 @@
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/services/user_service.dart';
-import 'package:erb/core/widgets/delete_overlay.dart';
-import 'package:erb/core/widgets/empty_state_widget.dart';
-import 'package:erb/features/account/presentation/views/widgets/delete_button.dart';
-import 'package:erb/features/auth/data/apis/auth_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/services/user_service.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
+import 'package:patria/core/utils/validators.dart';
+import 'package:patria/core/widgets/delete_overlay.dart';
+import 'package:patria/core/widgets/empty_state_widget.dart';
+import 'package:patria/features/account/presentation/views/widgets/delete_button.dart';
+import 'package:patria/features/auth/data/apis/auth_api.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
   const PersonalInformationScreen({super.key});
@@ -18,13 +22,12 @@ class PersonalInformationScreen extends StatefulWidget {
 
 class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   final UserService _userService = UserService();
+  final _formKey = GlobalKey<FormState>();
 
-  // Controllers
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
 
-  // State variables
   DateTime? _selectedDate;
   bool _subscribeNewsletter = false;
   bool _pushNotifications = false;
@@ -40,7 +43,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Refresh when returning from login screen
     _loadUserData();
   }
 
@@ -55,18 +57,45 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   Future<void> _loadUserData() async {
     setState(() => _isLoading = true);
 
-    // ✅ Reliable guest detection: check token + email
     final token = await _userService.getUserToken();
-    final userEmail = await _userService.getUserEmail();
-    final loggedIn = token.isNotEmpty && userEmail.isNotEmpty;
+    final loggedIn = token.isNotEmpty;
 
     if (loggedIn) {
       final userName = await _userService.getUserName();
+      final userEmail = await _userService.getUserEmail();
       final userPhone = await _userService.getUserPhone();
 
       _nameController.text = userName;
       _emailController.text = userEmail;
       _phoneController.text = userPhone;
+
+      try {
+        final profile = await AuthApi().getUserProfile();
+
+        // ✅ Sync phone from the live profile — the local cache can be
+        // stale or empty (e.g. Google sign-in never saved one locally)
+        // even though the backend already has it.
+        final profilePhone = profile['phone']?.toString();
+        if (profilePhone != null && profilePhone.isNotEmpty) {
+          _phoneController.text = profilePhone;
+        }
+
+        // Load date of birth
+        final dobStr = profile['dateOfBirth'] as String?;
+        if (dobStr != null && dobStr.isNotEmpty) {
+          final dateTime = DateTime.parse(dobStr);
+          _selectedDate = dateTime;
+        }
+
+        // ✅ Load preferences
+        final preferences = profile['preferences'] as Map<String, dynamic>?;
+        if (preferences != null) {
+          _pushNotifications = preferences['notifications'] ?? false;
+          _subscribeNewsletter = preferences['newsletter'] ?? false;
+        }
+      } catch (e) {
+        // ignore: failed to fetch profile, keep defaults
+      }
     }
 
     if (mounted) {
@@ -80,6 +109,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   Future<void> _saveUserData() async {
     if (!_isLoggedIn) return;
 
+    if (!(_formKey.currentState?.validate() ?? true)) return;
+
     setState(() => _isLoading = true);
 
     try {
@@ -89,10 +120,13 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
             '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
       }
 
+      // ✅ Save preferences along with profile
       await AuthApi().updateProfile(
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
         dateOfBirth: formattedDate,
+        pushNotifications: _pushNotifications,
+        newsletter: _subscribeNewsletter,
       );
 
       final userId = await _userService.getUserId();
@@ -112,8 +146,13 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('changes_saved'.tr()),
-            backgroundColor: Colors.green,
+            content: Text(
+              'changes_saved'.tr(),
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: const Color(0xFF3C4119),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16.h),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -122,10 +161,18 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        final message = e is DioException
+            ? ApiErrorHandler.handle(e)
+            : e.toString();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
+            content: Text(
+              message,
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: Color(0xFFC90000),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.all(16.h),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -133,17 +180,45 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
+  Future<void> _deleteAccount() async {
+    try {
+      await _userService.logout();
+      if (!mounted) return;
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).pushNamedAndRemoveUntil(Routes.splashScreen, (route) => false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.toString(),
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          backgroundColor: Color(0xFFC90000),
+          behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16.h),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   void _pickDate() async {
+    final now = DateTime.now();
+    final maxDateOfBirth = DateTime(now.year - 13, now.month, now.day);
+    final initialDate = _selectedDate ?? DateTime(2000);
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime(2000),
+      initialDate: initialDate.isAfter(maxDateOfBirth)
+          ? maxDateOfBirth
+          : initialDate,
       firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+      lastDate: maxDateOfBirth,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF6B5E4B),
-          ),
+          colorScheme: const ColorScheme.light(primary: Color(0xFF3C4119)),
         ),
         child: child!,
       ),
@@ -176,8 +251,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _isLoggedIn
-              ? _buildLoggedInContent()
-              : _buildGuestEmptyState(),
+          ? _buildLoggedInContent()
+          : _buildGuestEmptyState(),
     );
   }
 
@@ -189,45 +264,47 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       buttonText: 'sign_in'.tr(),
       imagePadding: EdgeInsets.all(16),
       onButtonPressed: () {
-        Navigator.of(context, rootNavigator: true)
-            .pushNamed(Routes.splashScreen)
-            .then((_) => _loadUserData());
+        Navigator.of(
+          context,
+          rootNavigator: true,
+        ).pushNamed(Routes.splashScreen).then((_) => _loadUserData());
       },
     );
   }
 
   Widget _buildLoggedInContent() {
     return SingleChildScrollView(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 24.h),
-          _buildFields(),
-          SizedBox(height: 35.h),
-          _buildCheckboxes(),
-          SizedBox(height: 32.h),
-          _buildSaveButton(),
-          SizedBox(height: 20.h),
-          DeleteButton(
-            text: 'Delete Account',
-            onPressed: () {
-              ConfirmationBottomSheet.show(
-                context: context,
-                title: "Are you sure you want to delete your account?",
-                subtitle:
-                    "This action is irreversible and you won't be able to recover your account.",
-                confirmText: "Delete account",
-                cancelText: "Cancel",
-                onConfirm: () {
-                  // Handle account deletion
-                },
-                isDangerous: true,
-              );
-            },
-          ),
-          SizedBox(height: 90.h),
-        ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 24.h),
+            _buildFields(),
+            SizedBox(height: 35.h),
+            _buildCheckboxes(),
+            SizedBox(height: 32.h),
+            _buildSaveButton(),
+            SizedBox(height: 20.h),
+            DeleteButton(
+              text: 'delete_account'.tr(),
+              onPressed: () {
+                ConfirmationBottomSheet.show(
+                  context: context,
+                  title: 'delete_account_title'.tr(),
+                  subtitle: 'delete_account_subtitle'.tr(),
+                  confirmText: 'delete_account_confirm'.tr(),
+                  cancelText: 'cancel'.tr(),
+                  onConfirm: _deleteAccount,
+                  isDangerous: true,
+                );
+              },
+            ),
+            SizedBox(height: 90.h),
+          ],
+        ),
       ),
     );
   }
@@ -236,21 +313,28 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildTextField(
+        _StyledFormField(
           label: 'full_name'.tr(),
           controller: _nameController,
+          hint: '',
+          enabled: true,
+          validator: Validators.fullName,
         ),
         SizedBox(height: 14.h),
-        _buildTextField(
+        _StyledFormField(
           label: 'email'.tr(),
           controller: _emailController,
+          hint: '',
           enabled: false,
         ),
         SizedBox(height: 14.h),
-        _buildTextField(
+        _StyledFormField(
           label: 'phone_number'.tr(),
           controller: _phoneController,
+          hint: '',
           keyboardType: TextInputType.phone,
+          enabled: true,
+          validator: Validators.phone,
         ),
         SizedBox(height: 14.h),
         _buildDateField(),
@@ -258,81 +342,37 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     );
   }
 
-  Widget _buildTextField({
-    required String label,
-    TextEditingController? controller,
-    bool enabled = true,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildLabel(label),
-        SizedBox(height: 10.h),
-        TextFormField(
-          controller: controller,
-          enabled: enabled,
-          keyboardType: keyboardType,
-          style: TextStyle(
-            color: enabled ? Colors.black : const Color(0xFF8B8B8B),
-            fontSize: 16.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w400,
-          ),
-          decoration: InputDecoration(
-            contentPadding:
-                EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
-            filled: true,
-            fillColor: enabled ? Colors.white : const Color(0xFFE5E5E5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: BorderSide(
-                color:
-                    enabled ? const Color(0xFFE5E5E5) : const Color(0xFFCACBD4),
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFFE5E5E5)),
-            ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFFCACBD4)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.r),
-              borderSide: const BorderSide(color: Color(0xFF6B5E4B)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildDateField() {
-    final formatted = _selectedDate != null
+    final hasDate = _selectedDate != null;
+    final formatted = hasDate
         ? '${_selectedDate!.day.toString().padLeft(2, '0')}/'
-            '${_selectedDate!.month.toString().padLeft(2, '0')}/'
-            '${_selectedDate!.year}'
+              '${_selectedDate!.month.toString().padLeft(2, '0')}/'
+              '${_selectedDate!.year}'
         : 'select_date'.tr();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('date_of_birth'.tr()),
+        Text(
+          'date_of_birth'.tr(),
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 12.sp,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         SizedBox(height: 10.h),
         GestureDetector(
           onTap: _pickDate,
           child: Container(
             width: double.infinity,
             height: 50.h,
-            padding: EdgeInsets.symmetric(horizontal: 18.w),
-            decoration: ShapeDecoration(
+            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
+            decoration: BoxDecoration(
               color: Colors.white,
-              shape: RoundedRectangleBorder(
-                side: const BorderSide(color: Color(0xFFE5E5E5)),
-                borderRadius: BorderRadius.circular(12),
-              ),
+              borderRadius: BorderRadius.circular(12.r),
+              border: Border.all(color: const Color(0xFFE5E5E5)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -340,14 +380,19 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                 Text(
                   formatted,
                   style: TextStyle(
-                    color: Colors.black,
+                    color: const Color(
+                      0xFF8B8B8B,
+                    ), // ✅ always grey — matches text field
                     fontSize: 16.sp,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w400,
                   ),
                 ),
-                const Icon(Icons.calendar_today_outlined,
-                    size: 20, color: Color(0xFF6B5E4B)),
+                const Icon(
+                  Icons.calendar_today_outlined,
+                  size: 20,
+                  color: Color(0xFF3C4119),
+                ),
               ],
             ),
           ),
@@ -394,8 +439,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6.r),
             ),
-            side: const BorderSide(color: Color(0xFF6B5E4B)),
-            activeColor: const Color(0xFF6B5E4B),
+            side: const BorderSide(color: Color(0xFF3C4119)),
+            activeColor: const Color(0xFF3C4119),
             materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
         ),
@@ -440,7 +485,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       child: ElevatedButton(
         onPressed: _isLoading || !_isLoggedIn ? null : _saveUserData,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6B5E4B),
+          backgroundColor: const Color(0xFF3C4119),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.r),
           ),
@@ -469,6 +514,136 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         fontFamily: 'Montserrat',
         fontWeight: FontWeight.w500,
       ),
+    );
+  }
+}
+
+// ========== Focus‑aware Styled Form Field ==========
+class _StyledFormField extends StatefulWidget {
+  final String label;
+  final TextEditingController controller;
+  final String hint;
+  final TextInputType keyboardType;
+  final bool enabled;
+  final String? Function(String?)? validator;
+
+  const _StyledFormField({
+    required this.label,
+    required this.controller,
+    this.hint = '',
+    this.keyboardType = TextInputType.text,
+    this.enabled = true,
+    this.validator,
+  });
+
+  @override
+  State<_StyledFormField> createState() => _StyledFormFieldState();
+}
+
+class _StyledFormFieldState extends State<_StyledFormField> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.enabled) {
+      _focusNode.addListener(() => setState(() {}));
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isFocused = widget.enabled && _focusNode.hasFocus;
+    final Color textColor = isFocused
+        ? Colors.black
+        : (widget.enabled ? const Color(0xFF8B8B8B) : const Color(0xFF8B8B8B));
+    final Color hintColor = isFocused
+        ? const Color(0xFF3C4119).withOpacity(0.7)
+        : const Color(0xFF8B8B8B);
+    final Color fillColor = widget.enabled
+        ? Colors.white
+        : const Color(0xFFE5E5E5);
+    final Color borderColor = isFocused
+        ? const Color(0xFF3C4119)
+        : (widget.enabled ? const Color(0xFFE5E5E5) : const Color(0xFFCACBD4));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.label,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 12.sp,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        TextFormField(
+          controller: widget.controller,
+          focusNode: widget.enabled ? _focusNode : null,
+          enabled: widget.enabled,
+          keyboardType: widget.keyboardType,
+          validator: widget.validator,
+          inputFormatters: [EmojiInputFormatter()],
+          style: TextStyle(
+            color: textColor,
+            fontSize: 16.sp,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w400,
+          ),
+          decoration: InputDecoration(
+            hintText: widget.hint.isEmpty ? null : widget.hint,
+            hintStyle: TextStyle(
+              color: hintColor,
+              fontSize: 16.sp,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+            ),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 18.w,
+              vertical: 14.h,
+            ),
+            filled: true,
+            fillColor: fillColor,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(color: borderColor),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFF3C4119)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFFC90000)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFFC90000)),
+            ),
+            // The phone error lists both accepted formats, so give it room.
+            errorMaxLines: 3,
+            errorStyle: TextStyle(
+              color: const Color(0xFFC90000),
+              fontSize: 12.sp,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

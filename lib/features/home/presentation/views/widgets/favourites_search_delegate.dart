@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/home/data/models/favorite_product_model.dart';
-import 'package:erb/features/home/presentation/views/favourites_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/home/data/models/favorite_product_model.dart';
+import 'package:patria/features/home/presentation/views/favourites_screen.dart';
 
 class FavouritesSearchDelegate extends SearchDelegate {
   final List<Map<String, String>> favourites;
@@ -18,7 +18,7 @@ class FavouritesSearchDelegate extends SearchDelegate {
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFFFAFAF7),
         elevation: 0,
-        iconTheme: IconThemeData(color: Color(0xFF6B5E4B)),
+        iconTheme: IconThemeData(color: Color(0xFF3C4119)),
       ),
       inputDecorationTheme: const InputDecorationTheme(
         border: InputBorder.none,
@@ -35,7 +35,7 @@ class FavouritesSearchDelegate extends SearchDelegate {
     return [
       if (query.isNotEmpty)
         IconButton(
-          icon: const Icon(Icons.clear, color: Color(0xFF6B5E4B)),
+          icon: const Icon(Icons.clear, color: Color(0xFF3C4119)),
           onPressed: () => query = '',
         ),
     ];
@@ -44,7 +44,7 @@ class FavouritesSearchDelegate extends SearchDelegate {
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.arrow_back, color: Color(0xFF6B5E4B)),
+      icon: const Icon(Icons.arrow_back, color: Color(0xFF3C4119)),
       onPressed: () => close(context, null),
     );
   }

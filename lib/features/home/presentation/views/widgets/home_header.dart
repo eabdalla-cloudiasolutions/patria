@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/services/user_service.dart';
-import 'package:erb/features/home/presentation/views/favourites_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/services/user_service.dart';
+import 'package:patria/features/home/presentation/views/favourites_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 class HomeHeader extends StatefulWidget {
@@ -55,8 +55,9 @@ class _HomeHeaderState extends State<HomeHeader> with RouteAware {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'greeting_with_name'
-                          .tr(namedArgs: {'userName': _userName}),
+                      'greeting_with_name'.tr(
+                        namedArgs: {'userName': _userName},
+                      ),
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 20.sp,
@@ -66,9 +67,7 @@ class _HomeHeaderState extends State<HomeHeader> with RouteAware {
                         letterSpacing: 0.40,
                       ),
                     ),
-                    SizedBox(
-                      height: 6,
-                    ),
+                    SizedBox(height: 6),
                     Text(
                       'home_subtitle'.tr(),
                       style: TextStyle(
@@ -93,7 +92,7 @@ class _HomeHeaderState extends State<HomeHeader> with RouteAware {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: ShapeDecoration(
-                    color: const Color(0xFFF5F0EA),
+                    color: const Color(0xFFE5E8D3),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
                     ),
@@ -103,7 +102,6 @@ class _HomeHeaderState extends State<HomeHeader> with RouteAware {
               ),
             ],
           )
-
         // ── Guest: title, subtitle, then full-width Sign In button ──
         else ...[
           Text(
@@ -117,9 +115,7 @@ class _HomeHeaderState extends State<HomeHeader> with RouteAware {
               letterSpacing: 0.40,
             ),
           ),
-          SizedBox(
-            height: 6,
-          ),
+          SizedBox(height: 6),
           Text(
             'sign_in_to_unlock'.tr(),
             style: TextStyle(
@@ -137,12 +133,13 @@ class _HomeHeaderState extends State<HomeHeader> with RouteAware {
             height: 52.h,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.of(context, rootNavigator: true)
-                    .pushNamed(Routes.splashScreen)
-                    .then((_) => _loadUser());
+                Navigator.of(
+                  context,
+                  rootNavigator: true,
+                ).pushNamed(Routes.splashScreen).then((_) => _loadUser());
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6B5E4B),
+                backgroundColor: const Color(0xFF3C4119),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5.r),
                 ),

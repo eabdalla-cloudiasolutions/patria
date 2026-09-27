@@ -1,7 +1,9 @@
 import 'package:bloc/bloc.dart';
-import 'package:erb/features/checkout/data/repos/place_order_repository.dart';
-import 'package:erb/features/checkout/presentation/manager/place_order_event.dart';
-import 'package:erb/features/checkout/presentation/manager/place_order_state.dart';
+import 'package:dio/dio.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/checkout/data/repos/place_order_repository.dart';
+import 'package:patria/features/checkout/presentation/manager/place_order_event.dart';
+import 'package:patria/features/checkout/presentation/manager/place_order_state.dart';
 
 class PlaceOrderBloc extends Bloc<PlaceOrderEvent, PlaceOrderState> {
   final PlaceOrderRepository repository;
@@ -19,7 +21,9 @@ class PlaceOrderBloc extends Bloc<PlaceOrderEvent, PlaceOrderState> {
       final response = await repository.placeOrder(event.request);
       emit(PlaceOrderSuccess(response));
     } catch (e) {
-      emit(PlaceOrderFailure(e.toString()));
+      final message =
+          e is DioException ? ApiErrorHandler.handle(e) : e.toString();
+      emit(PlaceOrderFailure(message));
     }
   }
 }

@@ -1,6 +1,6 @@
-import 'package:erb/core/network/api_client.dart';
-import 'package:erb/core/network/api_endpoints.dart';
-import 'package:erb/features/account/data/models/payment_method_model.dart';
+import 'package:patria/core/network/api_client.dart';
+import 'package:patria/core/network/api_endpoints.dart';
+import 'package:patria/features/account/data/models/payment_method_model.dart';
 
 class PaymentApi {
   Future<List<PaymentMethodModel>> getPaymentMethods() async {

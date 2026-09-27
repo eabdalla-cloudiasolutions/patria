@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:erb/features/checkout/data/models/place_order_response.dart';
+import 'package:patria/features/checkout/data/models/place_order_response.dart';
 
 abstract class PlaceOrderState extends Equatable {
   const PlaceOrderState();

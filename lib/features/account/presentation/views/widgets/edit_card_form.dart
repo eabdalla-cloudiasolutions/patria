@@ -115,7 +115,7 @@
 //               ),
 //               focusedBorder: OutlineInputBorder(
 //                 borderRadius: BorderRadius.circular(12.r),
-//                 borderSide: const BorderSide(color: Color(0xFF6B5E4B)),
+//                 borderSide: const BorderSide(color: Color(0xFF3C4119)),
 //               ),
 //               filled: true,
 //               fillColor: Colors.white,

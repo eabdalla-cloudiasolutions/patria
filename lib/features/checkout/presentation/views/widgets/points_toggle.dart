@@ -9,6 +9,7 @@ class PointsToggle extends StatelessWidget {
   final int pointsValue;
   final String redeemDisplayLabel;
   final VoidCallback onToggle;
+  final int minRedeemPoints;
 
   const PointsToggle({
     super.key,
@@ -18,14 +19,15 @@ class PointsToggle extends StatelessWidget {
     required this.pointsValue,
     required this.redeemDisplayLabel,
     required this.onToggle,
+    required this.minRedeemPoints,
   });
 
   @override
   Widget build(BuildContext context) {
     final formattedPoints = points.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (m) => '${m[1]},',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (m) => '${m[1]},',
+    );
 
     return Opacity(
       // ✅ Dim if can't redeem
@@ -75,7 +77,9 @@ class PointsToggle extends StatelessWidget {
                     ),
                     if (!canRedeem)
                       Text(
-                        'min_points_required'.tr(), // add to localization
+                        'min_points_required'.tr(
+                          args: [minRedeemPoints.toString()],
+                        ),
                         style: TextStyle(
                           color: Colors.red,
                           fontSize: 10.sp,
@@ -97,14 +101,15 @@ class PointsToggle extends StatelessWidget {
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                   color: isEnabled
-                      ? const Color(0xFF6B5E4B)
+                      ? const Color(0xFF3C4119)
                       : const Color(0xFFCACBD4),
                   borderRadius: BorderRadius.circular(13.r),
                 ),
                 child: AnimatedAlign(
                   duration: const Duration(milliseconds: 250),
-                  alignment:
-                      isEnabled ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isEnabled
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Container(
                     width: 20.w,
                     height: 20.h,

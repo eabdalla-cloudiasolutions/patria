@@ -1,15 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
-import 'package:erb/core/services/user_service.dart';
-import 'package:erb/core/utils/launcher_utils.dart';
-import 'package:erb/features/account/presentation/views/payment_methods_screen.dart';
-import 'package:erb/features/account/presentation/views/personal_information_screen.dart';
-import 'package:erb/features/account/presentation/views/saved_addresses_screen.dart';
-import 'package:erb/features/account/presentation/views/widgets/account_section.dart';
-import 'package:erb/features/account/presentation/views/widgets/language_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:patria/core/routing/routes.dart';
+import 'package:patria/core/services/user_service.dart';
+import 'package:patria/core/utils/launcher_utils.dart';
+import 'package:patria/features/account/presentation/views/personal_information_screen.dart';
+import 'package:patria/features/account/presentation/views/saved_addresses_screen.dart';
+import 'package:patria/features/account/presentation/views/widgets/account_section.dart';
+import 'package:patria/features/account/presentation/views/widgets/language_bottom_sheet.dart';
+import 'package:patria/features/account/presentation/views/widgets/privacy_screen.dart';
+import 'package:patria/features/account/presentation/views/widgets/terms_screen.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 import 'widgets/account_menu_item.dart';
@@ -29,6 +30,7 @@ class _AccountScreenState extends State<AccountScreen> {
   String _selectedLanguage = 'en';
   String _appVersion = '';
   String _userName = '';
+  bool _isLoggedIn = false; // ✅ added
 
   final UserService _userService = UserService();
 
@@ -47,9 +49,12 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _loadUserName() async {
+    final token = await _userService.getUserToken();
     final userName = await _userService.getUserName();
+
     if (mounted) {
       setState(() {
+        _isLoggedIn = token.isNotEmpty;
         _userName = userName;
       });
     }
@@ -112,7 +117,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       width: 36.w,
                       height: 36.h,
                       decoration: const BoxDecoration(
-                        color: Color(0xFF6B5E4B),
+                        color: Color(0xFF3C4119),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -139,9 +144,11 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
               SizedBox(height: 24.h),
 
-              // Points card
-              const PointsCard(),
+              // ✅ Points card — only show when logged in
+              // if (_isLoggedIn) ...[
+              PointsCard(isLoggedIn: _isLoggedIn),
               SizedBox(height: 24.h),
+              // ],
 
               // General section
               AccountSection(
@@ -164,17 +171,6 @@ class _AccountScreenState extends State<AccountScreen> {
                     onTap: () => PersistentNavBarNavigator.pushNewScreen(
                       context,
                       screen: const SavedAddressesScreen(),
-                      withNavBar: true,
-                      pageTransitionAnimation:
-                          PageTransitionAnimation.cupertino,
-                    ),
-                  ),
-                  AccountMenuItem(
-                    title: 'payment_methods'.tr(),
-                    icon: Icons.credit_card_outlined,
-                    onTap: () => PersistentNavBarNavigator.pushNewScreen(
-                      context,
-                      screen: const PaymentMethodsScreen(),
                       withNavBar: true,
                       pageTransitionAnimation:
                           PageTransitionAnimation.cupertino,
@@ -206,10 +202,12 @@ class _AccountScreenState extends State<AccountScreen> {
                     icon: Icons.notifications_outlined,
                     isLast: true,
                     onTap: () => setState(
-                        () => _notificationsEnabled = !_notificationsEnabled),
+                      () => _notificationsEnabled = !_notificationsEnabled,
+                    ),
                     trailing: GestureDetector(
                       onTap: () => setState(
-                          () => _notificationsEnabled = !_notificationsEnabled),
+                        () => _notificationsEnabled = !_notificationsEnabled,
+                      ),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
                         width: 48.w,
@@ -217,7 +215,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           color: _notificationsEnabled
-                              ? const Color(0xFF6B5E4B)
+                              ? const Color(0xFF3C4119)
                               : const Color(0xFFCACBD4),
                           borderRadius: BorderRadius.circular(13),
                         ),
@@ -261,13 +259,25 @@ class _AccountScreenState extends State<AccountScreen> {
                   AccountMenuItem(
                     title: 'terms_conditions'.tr(),
                     icon: Icons.description_outlined,
-                    onTap: () {},
+                    onTap: () => PersistentNavBarNavigator.pushNewScreen(
+                      context,
+                      screen: const TermsScreen(),
+                      withNavBar: true,
+                      pageTransitionAnimation:
+                          PageTransitionAnimation.cupertino,
+                    ),
                   ),
                   AccountMenuItem(
                     title: 'privacy_policy'.tr(),
                     icon: Icons.privacy_tip_outlined,
                     isLast: true,
-                    onTap: () {},
+                    onTap: () => PersistentNavBarNavigator.pushNewScreen(
+                      context,
+                      screen: const PrivacyScreen(),
+                      withNavBar: true,
+                      pageTransitionAnimation:
+                          PageTransitionAnimation.cupertino,
+                    ),
                   ),
                 ],
               ),
@@ -281,12 +291,14 @@ class _AccountScreenState extends State<AccountScreen> {
                     icon: Icons.logout,
                     isLast: true,
                     onTap: () async {
-                      await _userService.logout(); // ✅ Clears SharedPreferences
+                      await _userService.logout();
                       if (mounted) {
-                        Navigator.of(context, rootNavigator: true)
-                            .pushNamedAndRemoveUntil(
-                          Routes.splashScreen, // ✅ Navigates to splash screen
-                          (route) => false, // ✅ Removes all previous routes
+                        Navigator.of(
+                          context,
+                          rootNavigator: true,
+                        ).pushNamedAndRemoveUntil(
+                          Routes.splashScreen,
+                          (route) => false,
                         );
                       }
                     },

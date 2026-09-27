@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/auth/presentation/views/widgets/otp_verification_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/utils/emoji_input_formatter.dart';
+import 'package:patria/core/utils/validators.dart';
+import 'package:patria/features/auth/presentation/views/widgets/otp_verification_bottom_sheet.dart';
 
 class PhoneVerificationBottomSheet extends StatefulWidget {
   const PhoneVerificationBottomSheet({super.key});
@@ -14,6 +16,7 @@ class PhoneVerificationBottomSheet extends StatefulWidget {
 class _PhoneVerificationBottomSheetState
     extends State<PhoneVerificationBottomSheet> {
   final _phoneController = TextEditingController();
+  String? _phoneError;
 
   @override
   void dispose() {
@@ -31,7 +34,7 @@ class _PhoneVerificationBottomSheetState
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 32.h),
         clipBehavior: Clip.antiAlias,
         decoration: ShapeDecoration(
-          color: Color(0xFFFAFAF7),
+          color: const Color(0xFFFAFAF7),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30.r),
@@ -45,9 +48,8 @@ class _PhoneVerificationBottomSheetState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               Text(
-                'welcome_to_erb'.tr(),
+                'welcome_to_patria'.tr(),
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 20.sp,
@@ -57,14 +59,11 @@ class _PhoneVerificationBottomSheetState
                   letterSpacing: 0.40,
                 ),
               ),
-
               SizedBox(height: 6.h),
-
-              // Subtitle
               Text(
                 'enter_phone_for_otp'.tr(),
                 style: TextStyle(
-                  color: Color(0xFF515151),
+                  color: const Color(0xFF515151),
                   fontSize: 16.sp,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w400,
@@ -72,86 +71,39 @@ class _PhoneVerificationBottomSheetState
                   letterSpacing: 0.32,
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              // Phone label
-              Text(
-                'phone_number'.tr(),
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 12.sp,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-
-              SizedBox(height: 10.h),
-
-              // Phone field
-              TextField(
+              SizedBox(height: 24.h),
+              _StyledPhoneField(
                 controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                style: TextStyle(
-                  color: Color(0xFF8B8B8B),
-                  fontSize: 16.sp,
-                  fontFamily: 'Montserrat',
-                  fontWeight: FontWeight.w400,
-                ),
-                decoration: InputDecoration(
-                  hintText: '+20 1XX XXX XXXX',
-                  hintStyle: const TextStyle(
-                    color: Color(0xFF8B8B8B),
-                    fontSize: 16,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w400,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.phone_outlined,
-                    color: Color(0xFF8B8B8B),
-                    size: 24,
-                  ),
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      width: 1.w,
-                      color: Color(0xFFE5E5E5),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                    borderSide: BorderSide(
-                      width: 1.w,
-                      color: Color(0xFFE5E5E5),
-                    ),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
+                label: 'phone_number'.tr(),
+                hint: '00000000000',
+                errorText: _phoneError,
               ),
-
               SizedBox(height: 32.h),
-
-              // Send OTP button
               ElevatedButton(
                 onPressed: () {
+                  final error = Validators.phone(_phoneController.text);
+                  if (error != null) {
+                    setState(() => _phoneError = error);
+                    return;
+                  }
+                  setState(() => _phoneError = null);
                   Navigator.pop(context);
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                     builder: (context) => OtpVerificationBottomSheet(
-                      phoneNumber: '+20 1XX XXX XXXX', // pass the actual number
+                      phoneNumber: _phoneController.text.trim(),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B5E4B),
+                  backgroundColor: const Color(0xFF3C4119),
                   minimumSize: Size(double.infinity, 56.h),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 30.w, vertical: 16.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 30.w,
+                    vertical: 16.h,
+                  ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5.r),
@@ -168,12 +120,122 @@ class _PhoneVerificationBottomSheetState
                   ),
                 ),
               ),
-
               SizedBox(height: 8.h),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+// ========== Focus‑aware Phone Field ==========
+class _StyledPhoneField extends StatefulWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final String? errorText;
+
+  const _StyledPhoneField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    this.errorText,
+  });
+
+  @override
+  State<_StyledPhoneField> createState() => _StyledPhoneFieldState();
+}
+
+class _StyledPhoneFieldState extends State<_StyledPhoneField> {
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isFocused = _focusNode.hasFocus;
+    final Color textColor = isFocused ? Colors.black : const Color(0xFF8B8B8B);
+    final Color hintColor = isFocused
+        ? const Color(0xFF3C4119).withOpacity(0.7)
+        : const Color(0xFF8B8B8B);
+    final Color iconColor = isFocused
+        ? const Color(0xFF3C4119)
+        : const Color(0xFF8B8B8B);
+    final Color borderColor = isFocused
+        ? const Color(0xFF3C4119)
+        : const Color(0xFFE5E5E5);
+    final bool hasError = widget.errorText != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.label,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 12.sp,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        SizedBox(height: 10.h),
+        TextField(
+          controller: widget.controller,
+          focusNode: _focusNode,
+          keyboardType: TextInputType.phone,
+          inputFormatters: [EmojiInputFormatter()],
+          style: TextStyle(
+            color: textColor,
+            fontSize: 16.sp,
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.w400,
+          ),
+          decoration: InputDecoration(
+            hintText: widget.hint,
+            hintStyle: TextStyle(
+              color: hintColor,
+              fontSize: 16.sp,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w400,
+            ),
+            prefixIcon: Icon(Icons.phone_outlined, color: iconColor, size: 24),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: 18.w,
+              vertical: 12.h,
+            ),
+            errorText: widget.errorText,
+            // The phone error lists both accepted formats, so let it wrap.
+            errorMaxLines: 3,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(
+                width: 1.w,
+                color: hasError ? Colors.red : borderColor,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(
+                width: 1.5,
+                color: hasError ? Colors.red : const Color(0xFF3C4119),
+              ),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }

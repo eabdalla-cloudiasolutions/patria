@@ -1,10 +1,10 @@
 // lib/features/cart/presentation/bloc/coupon_bloc.dart
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
-import 'package:erb/core/network/api_error_handler.dart';
-import 'package:erb/features/cart/data/repos/coupon_repository.dart';
-import 'package:erb/features/cart/presentation/manager/coupon_event.dart';
-import 'package:erb/features/cart/presentation/manager/coupon_state.dart';
+import 'package:patria/core/network/api_error_handler.dart';
+import 'package:patria/features/cart/data/repos/coupon_repository.dart';
+import 'package:patria/features/cart/presentation/manager/coupon_event.dart';
+import 'package:patria/features/cart/presentation/manager/coupon_state.dart';
 
 class CouponBloc extends Bloc<CouponEvent, CouponState> {
   final CouponRepository repository;
@@ -15,7 +15,9 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
   }
 
   Future<void> _onApplyCoupon(
-      ApplyCoupon event, Emitter<CouponState> emit) async {
+    ApplyCoupon event,
+    Emitter<CouponState> emit,
+  ) async {
     emit(CouponLoading());
     try {
       final response = await repository.applyCoupon(event.code, event.subtotal);
@@ -27,7 +29,7 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
       }
     } catch (e) {
       // DioException or other errors
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(CouponError(errorMessage));
     }
   }

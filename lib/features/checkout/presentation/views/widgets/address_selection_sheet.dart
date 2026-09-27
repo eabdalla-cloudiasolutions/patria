@@ -1,15 +1,31 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/account/data/apis/addresses_api.dart';
-import 'package:erb/features/account/data/models/address_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import 'address_form_sheet.dart';
+import 'package:patria/features/account/data/apis/addresses_api.dart';
+import 'package:patria/features/account/data/models/address_model.dart';
+import 'package:patria/features/checkout/data/models/delivery_zone_model.dart';
+import 'package:patria/features/checkout/presentation/manager/delivery_zones_bloc.dart';
+import 'package:patria/features/checkout/presentation/manager/delivery_zones_state.dart';
+import 'package:patria/features/checkout/presentation/views/new_address_screen.dart';
 
 class AddressSelectionSheet extends StatefulWidget {
-  final Function(String fullAddress, String zoneId) onAddressSelected;
+  final String? selectedAddressId;
+  final Function(
+    String fullAddress,
+    String addressId,
+    String deliveryZoneId,
+    String zoneName, {
+    double? lat,
+    double? lng,
+  })
+  onAddressSelected;
 
-  const AddressSelectionSheet({super.key, required this.onAddressSelected});
+  const AddressSelectionSheet({
+    super.key,
+    this.selectedAddressId,
+    required this.onAddressSelected,
+  });
 
   @override
   State<AddressSelectionSheet> createState() => _AddressSelectionSheetState();
@@ -17,55 +33,100 @@ class AddressSelectionSheet extends StatefulWidget {
 
 class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
   late Future<List<AddressModel>> _addressesFuture;
-  String? _selectedAddressId;
 
   @override
   void initState() {
     super.initState();
-    _addressesFuture = AddressesApi().getAddresses().then((list) {
-      // Auto-select default address if any
-      try {
-        final defaultAddr = list.firstWhere((a) => a.isDefault);
-        _selectedAddressId = defaultAddr.id;
-      } catch (_) {}
-      return list;
-    });
+    _addressesFuture = AddressesApi().getAddresses();
   }
 
   String _formatAddress(AddressModel addr) {
-    return '${addr.street}, ${addr.area}, ${addr.city}';
+    return '${addr.buildingName.isNotEmpty ? addr.buildingName : ""}, ${addr.street}, ${addr.zone}, ${addr.city}'
+        .replaceAll(RegExp(r'^,\s*'), '');
   }
 
-  void _selectAddress(AddressModel addr) {
-    widget.onAddressSelected(_formatAddress(addr), '');
-    Navigator.pop(context); // closes selection sheet only
+  Future<void> _selectAddress(AddressModel addr) async {
+    String deliveryZoneId = '';
+    String zoneName = addr.zone;
+
+    try {
+      final zonesBloc = context.read<DeliveryZonesBloc>();
+      DeliveryZonesState currentState = zonesBloc.state;
+
+      if (currentState is DeliveryZonesLoading) {
+        try {
+          await zonesBloc.stream
+              .firstWhere((state) => state is DeliveryZonesLoaded)
+              .timeout(const Duration(seconds: 5));
+          currentState = zonesBloc.state;
+        } catch (_) {}
+      }
+
+      if (currentState is DeliveryZonesLoaded) {
+        final zones = currentState.zones;
+        final matched = zones.firstWhere(
+          (z) =>
+              z.name.trim().toLowerCase() == addr.zone.trim().toLowerCase() ||
+              z.name.trim().toLowerCase().contains(
+                addr.zone.trim().toLowerCase(),
+              ) ||
+              addr.zone.trim().toLowerCase().contains(
+                z.name.trim().toLowerCase(),
+              ),
+          orElse: () => DeliveryZone(
+            id: '',
+            name: '',
+            deliveryFee: 0,
+            minOrderAmount: 0,
+            status: '',
+            deliverySchedule: [],
+          ),
+        );
+        deliveryZoneId = matched.id;
+      }
+    } catch (e) {
+      print('Zone matching error: $e');
+    }
+
+    widget.onAddressSelected(
+      _formatAddress(addr),
+      addr.id,
+      deliveryZoneId,
+      zoneName,
+      lat: addr.lat,
+      lng: addr.lng,
+    );
+    if (mounted) Navigator.pop(context);
   }
 
   Future<void> _addNewAddress() async {
-    // Open form sheet (do NOT close selection sheet yet)
-    final result = await showModalBottomSheet<Map<String, String>>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => AddressFormSheet(
-        onSave: (address, zoneId) {
-          // Close the form sheet and return the new address
-          if (ctx.mounted) {
-            Navigator.pop(ctx, {'address': address, 'zoneId': zoneId});
-          }
-        },
-      ),
-    );
+    // ✅ Open NewAddressScreen first (map screen)
+    final result = await Navigator.of(
+      context,
+      rootNavigator: true,
+    ).push(MaterialPageRoute(builder: (_) => const NewAddressScreen()));
 
-    if (result != null && mounted) {
-      // Pass the new address to the checkout screen
-      widget.onAddressSelected(result['address']!, result['zoneId']!);
-      // Close the selection sheet (this should return to checkout screen)
-      // Use Navigator.of(context).pop() – same as Navigator.pop(context)
-      if (mounted) {
-        Navigator.pop(context);
-      }
+    if (!mounted) return;
+
+    final addressId = result is Map ? result['addressId'] as String? : null;
+    if (addressId == null) {
+      // ✅ Refresh addresses list after returning
+      setState(() {
+        _addressesFuture = AddressesApi().getAddresses();
+      });
+      return;
     }
+
+    // ✅ Auto-select the address that was just created, regardless of
+    // whether "set as default" was checked, instead of leaving nothing
+    // selected until the user reopens this list.
+    final addresses = await AddressesApi().getAddresses();
+    if (!mounted) return;
+    final newAddress = addresses.firstWhere(
+      (a) => a.id == addressId,
+      orElse: () => addresses.first,
+    );
+    await _selectAddress(newAddress);
   }
 
   @override
@@ -82,7 +143,6 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
           ),
           child: Column(
             children: [
-              // Drag handle
               Center(
                 child: Container(
                   margin: EdgeInsets.symmetric(vertical: 12.h),
@@ -94,7 +154,6 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
                   ),
                 ),
               ),
-              // Title
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Row(
@@ -114,7 +173,6 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
                 ),
               ),
               SizedBox(height: 16.h),
-              // Address list
               Expanded(
                 child: FutureBuilder<List<AddressModel>>(
                   future: _addressesFuture,
@@ -152,12 +210,14 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
                       ),
                       itemBuilder: (_, index) {
                         final addr = addresses[index];
-                        final isSelected = _selectedAddressId == addr.id;
+                        final isSelected = widget.selectedAddressId == addr.id;
                         return GestureDetector(
                           onTap: () => _selectAddress(addr),
                           child: Container(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 16.w, vertical: 12.h),
+                              horizontal: 16.w,
+                              vertical: 12.h,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
@@ -178,7 +238,7 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
                                               ),
                                             ),
                                             TextSpan(
-                                              text: ' (${addr.area})',
+                                              text: ' (${addr.zone})',
                                               style: TextStyle(
                                                 color: const Color(0xFF8B8B8B),
                                                 fontSize: 14.sp,
@@ -208,16 +268,19 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: isSelected
-                                        ? const Color(0xFF6B5E4B)
+                                        ? const Color(0xFF3C4119)
                                         : Colors.transparent,
                                     border: Border.all(
-                                      color: const Color(0xFF6B5E4B),
+                                      color: const Color(0xFF3C4119),
                                       width: isSelected ? 0 : 1,
                                     ),
                                   ),
                                   child: isSelected
-                                      ? const Icon(Icons.check,
-                                          size: 14, color: Colors.white)
+                                      ? const Icon(
+                                          Icons.check,
+                                          size: 14,
+                                          color: Colors.white,
+                                        )
                                       : null,
                                 ),
                               ],
@@ -229,7 +292,6 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
                   },
                 ),
               ),
-              // Add new address button
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
                 child: SizedBox(
@@ -238,8 +300,8 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
                   child: ElevatedButton(
                     onPressed: _addNewAddress,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF5F0EA),
-                      foregroundColor: const Color(0xFF6B5E4B),
+                      backgroundColor: const Color(0xFFE5E8D3),
+                      foregroundColor: const Color(0xFF3C4119),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5.r),

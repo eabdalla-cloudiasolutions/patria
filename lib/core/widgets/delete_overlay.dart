@@ -28,7 +28,7 @@ class ConfirmationBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dangerColor = confirmButtonColor ?? const Color(0xFFC90000);
-    final primaryColor = const Color(0xFF6B5E4B);
+    final primaryColor = const Color(0xFF3C4119);
     final buttonColor = isDangerous ? dangerColor : primaryColor;
 
     return Container(
@@ -133,10 +133,7 @@ class ConfirmationBottomSheet extends StatelessWidget {
                 onCancel?.call();
               },
               style: OutlinedButton.styleFrom(
-                side: BorderSide(
-                  width: 1,
-                  color: primaryColor,
-                ),
+                side: BorderSide(width: 1, color: primaryColor),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5.r),
                 ),

@@ -5,16 +5,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class OrderPriceSummaryCard extends StatelessWidget {
   final double subtotal;
   final double deliveryFee;
-  final double serviceFee;
+  final double discount;
 
   const OrderPriceSummaryCard({
     super.key,
     required this.subtotal,
     required this.deliveryFee,
-    required this.serviceFee,
+    this.discount = 0,
   });
 
-  double get _total => subtotal + deliveryFee + serviceFee;
+  double get _total => subtotal + deliveryFee - discount;
 
   @override
   Widget build(BuildContext context) {
@@ -42,10 +42,17 @@ class OrderPriceSummaryCard extends StatelessWidget {
           _buildPriceRow(context, 'subtotal'.tr(), subtotal),
           SizedBox(height: 10.h),
           _buildPriceRow(context, 'delivery_fee'.tr(), deliveryFee),
+          if (discount > 0) ...[
+            SizedBox(height: 10.h),
+            _buildPriceRow(
+              context,
+              'discount'.tr(),
+              discount,
+              isDiscount: true,
+            ),
+          ],
           SizedBox(height: 10.h),
-          _buildPriceRow(context, 'service_fee'.tr(), serviceFee),
-          SizedBox(height: 10.h),
-          Divider(color: Color(0xFFCACBD4), height: 1.h),
+          Divider(color: const Color(0xFFCACBD4), height: 1.h),
           SizedBox(height: 10.h),
           _buildPriceRow(context, 'total'.tr(), _total, isTotal: true),
         ],
@@ -53,8 +60,13 @@ class OrderPriceSummaryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceRow(BuildContext context, String label, double amount,
-      {bool isTotal = false}) {
+  Widget _buildPriceRow(
+    BuildContext context,
+    String label,
+    double amount, {
+    bool isTotal = false,
+    bool isDiscount = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -71,10 +83,21 @@ class OrderPriceSummaryCard extends StatelessWidget {
         Text.rich(
           TextSpan(
             children: [
+              if (isDiscount)
+                TextSpan(
+                  text: '- ',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontSize: 13.sp,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                    height: 1.10,
+                  ),
+                ),
               TextSpan(
                 text: 'currency'.tr(),
                 style: TextStyle(
-                  color: Color(0xFF515151),
+                  color: isDiscount ? Colors.green : const Color(0xFF515151),
                   fontSize: 13.sp,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w400,
@@ -84,7 +107,7 @@ class OrderPriceSummaryCard extends StatelessWidget {
               TextSpan(
                 text: amount.toStringAsFixed(2),
                 style: TextStyle(
-                  color: Color(0xFF515151),
+                  color: isDiscount ? Colors.green : const Color(0xFF515151),
                   fontSize: 13.sp,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w600,

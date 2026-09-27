@@ -1,5 +1,5 @@
-import 'package:erb/features/cart/data/apis/cart_api.dart';
-import 'package:erb/features/cart/data/models/cart_model.dart';
+import 'package:patria/features/cart/data/apis/cart_api.dart';
+import 'package:patria/features/cart/data/models/cart_model.dart';
 
 class CartRepository {
   final CartApi _api = CartApi();
@@ -14,12 +14,14 @@ class CartRepository {
     required int quantity,
     String? notes,
     Map<String, dynamic>? customization,
+    List<Map<String, dynamic>>? selectedVariants, // ← add this
   }) async {
     final response = await _api.addToCart(
       productId: productId,
       quantity: quantity,
       notes: notes,
       customization: customization,
+      selectedVariants: selectedVariants, // ← add this
     );
     return CartResponse.fromJson(response.data);
   }
@@ -28,8 +30,25 @@ class CartRepository {
     required String itemId,
     required int quantity,
   }) async {
-    final response =
-        await _api.updateQuantity(itemId: itemId, quantity: quantity);
+    final response = await _api.updateQuantity(
+      itemId: itemId,
+      quantity: quantity,
+    );
+    return CartResponse.fromJson(response.data);
+  }
+
+  Future<CartResponse> updateCartItem({
+    required String itemId,
+    required int quantity,
+    Map<String, dynamic>? customization,
+    String? notes,
+  }) async {
+    final response = await _api.updateCartItem(
+      itemId: itemId,
+      quantity: quantity,
+      customization: customization,
+      notes: notes,
+    );
     return CartResponse.fromJson(response.data);
   }
 

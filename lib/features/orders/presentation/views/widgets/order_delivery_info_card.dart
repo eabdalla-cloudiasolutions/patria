@@ -24,7 +24,7 @@ class OrderDeliveryInfoCard extends StatelessWidget {
       child: Column(
         children: [
           _buildInfoRow(
-            icon: Icons.location_on_outlined,
+            image: 'assets/images/map-marker-alt.png',
             title: 'delivery_address'.tr(),
             value: deliveryAddress,
           ),
@@ -32,7 +32,7 @@ class OrderDeliveryInfoCard extends StatelessWidget {
           Divider(color: Color(0xFFCACBD4), height: 1.h),
           SizedBox(height: 16.h),
           _buildInfoRow(
-            icon: Icons.credit_card_outlined,
+            image: 'assets/images/Wallet.png',
             title: 'payment_method'.tr(),
             value: paymentMethod,
           ),
@@ -42,14 +42,18 @@ class OrderDeliveryInfoCard extends StatelessWidget {
   }
 
   Widget _buildInfoRow({
-    required IconData icon,
+    required String image,
     required String title,
     required String value,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF6B5E4B)),
+        Image.asset(
+          image,
+          height: 20,
+          width: 20,
+        ),
         SizedBox(width: 8.w),
         Expanded(
           child: Column(

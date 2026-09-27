@@ -1,6 +1,6 @@
-import 'package:erb/core/widgets/safe_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/widgets/safe_network_image.dart';
 
 class HomeBannerItem extends StatelessWidget {
   final String title;
@@ -78,8 +78,10 @@ class HomeBannerItem extends StatelessWidget {
               // Show discount badge if available
               if (discountPercent != null)
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 6.h,
+                  ),
                   decoration: ShapeDecoration(
                     color: const Color(0xFFFFF0F0),
                     shape: RoundedRectangleBorder(

@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/features/auth/data/apis/auth_api.dart';
-import 'package:erb/features/auth/presentation/views/widgets/custom_text_field.dart';
-import 'package:erb/features/auth/presentation/views/widgets/signIn_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/auth/data/apis/auth_api.dart';
+import 'package:patria/features/auth/presentation/views/widgets/custom_text_field.dart';
+import 'package:patria/features/auth/presentation/views/widgets/signIn_bottom_sheet.dart';
 
 class NewPasswordBottomSheet extends StatefulWidget {
   final String phoneNumber; // ✅
@@ -154,7 +154,8 @@ class _NewPasswordBottomSheetState extends State<NewPasswordBottomSheet> {
                 isPassword: true,
                 obscureText: _obscureConfirmPassword,
                 onToggleVisibility: () => setState(
-                    () => _obscureConfirmPassword = !_obscureConfirmPassword),
+                  () => _obscureConfirmPassword = !_obscureConfirmPassword,
+                ),
                 prefixIcon: const Icon(
                   Icons.lock_outline,
                   color: Color(0xFF8B8B8B),
@@ -167,8 +168,10 @@ class _NewPasswordBottomSheetState extends State<NewPasswordBottomSheet> {
                 SizedBox(height: 12.h),
                 Container(
                   width: double.infinity,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.w,
+                    vertical: 12.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEEEE),
                     borderRadius: BorderRadius.circular(8.r),
@@ -176,8 +179,11 @@ class _NewPasswordBottomSheetState extends State<NewPasswordBottomSheet> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 18),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 18,
+                      ),
                       SizedBox(width: 8.w),
                       Expanded(
                         child: Text(
@@ -201,10 +207,12 @@ class _NewPasswordBottomSheetState extends State<NewPasswordBottomSheet> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _resetPassword,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6B5E4B),
+                  backgroundColor: const Color(0xFF3C4119),
                   minimumSize: const Size(double.infinity, 56),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 30.w, vertical: 16.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 30.w,
+                    vertical: 16.h,
+                  ),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -239,7 +247,7 @@ class _NewPasswordBottomSheetState extends State<NewPasswordBottomSheet> {
                   child: Text(
                     'return_to_sign_in'.tr(),
                     style: TextStyle(
-                      color: Color(0xFF6B5E4B),
+                      color: Color(0xFF3C4119),
                       fontSize: 16.sp,
                       fontFamily: 'Montserrat',
                       fontWeight: FontWeight.w600,

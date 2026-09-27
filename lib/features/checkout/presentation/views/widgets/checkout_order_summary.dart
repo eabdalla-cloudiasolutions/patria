@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class CheckoutOrderSummary extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;
   final double deliveryFee;
-  final double serviceFee;
   final double couponDiscount;
   final double pointsDiscount;
   final double? totalOverride;
@@ -14,7 +13,6 @@ class CheckoutOrderSummary extends StatelessWidget {
   const CheckoutOrderSummary({
     super.key,
     this.deliveryFee = 25.0,
-    this.serviceFee = 32.0,
     this.couponDiscount = 0,
     this.pointsDiscount = 0,
     this.totalOverride,
@@ -23,16 +21,21 @@ class CheckoutOrderSummary extends StatelessWidget {
   });
 
   double get subtotal => cartItems.fold(
-        0,
-        (sum, item) => sum + (item['price'] * item['quantity']),
-      );
+    0,
+    (sum, item) => sum + (item['price'] * item['quantity']),
+  );
 
   double get total =>
       totalOverride ??
-      (subtotal - couponDiscount - pointsDiscount + deliveryFee + serviceFee);
+      (subtotal - couponDiscount - pointsDiscount + deliveryFee);
 
-  Widget _buildRow(BuildContext context, String label, double amount,
-      {bool isBold = false, bool isDiscount = false}) {
+  Widget _buildRow(
+    BuildContext context,
+    String label,
+    double amount, {
+    bool isBold = false,
+    bool isDiscount = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -47,42 +50,44 @@ class CheckoutOrderSummary extends StatelessWidget {
           ),
         ),
         Text.rich(
-          TextSpan(children: [
-            if (isDiscount)
+          TextSpan(
+            children: [
+              if (isDiscount)
+                TextSpan(
+                  text: '- ',
+                  style: TextStyle(
+                    color: const Color(0xFF059B5A),
+                    fontSize: 13.sp,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               TextSpan(
-                text: '- ',
+                text: 'currency'.tr(),
                 style: TextStyle(
-                  color: const Color(0xFF059B5A),
+                  color: isDiscount
+                      ? const Color(0xFF059B5A)
+                      : const Color(0xFF515151),
+                  fontSize: 13.sp,
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.w400,
+                  height: 1.10,
+                ),
+              ),
+              TextSpan(
+                text: amount.toStringAsFixed(2),
+                style: TextStyle(
+                  color: isDiscount
+                      ? const Color(0xFF059B5A)
+                      : const Color(0xFF515151),
                   fontSize: 13.sp,
                   fontFamily: 'Montserrat',
                   fontWeight: FontWeight.w600,
+                  height: 1.10,
                 ),
               ),
-            TextSpan(
-              text: 'currency'.tr(),
-              style: TextStyle(
-                color: isDiscount
-                    ? const Color(0xFF059B5A)
-                    : const Color(0xFF515151),
-                fontSize: 13.sp,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w400,
-                height: 1.10,
-              ),
-            ),
-            TextSpan(
-              text: amount.toStringAsFixed(2),
-              style: TextStyle(
-                color: isDiscount
-                    ? const Color(0xFF059B5A)
-                    : const Color(0xFF515151),
-                fontSize: 13.sp,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w600,
-                height: 1.10,
-              ),
-            ),
-          ]),
+            ],
+          ),
         ),
       ],
     );
@@ -113,27 +118,27 @@ class CheckoutOrderSummary extends StatelessWidget {
           ),
           child: Column(
             children: [
-              // Items list
-              ...cartItems.map((item) => Padding(
-                    padding: EdgeInsets.only(bottom: 10.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'item_quantity'.tr(args: [
-                            item['quantity'].toString(),
-                            item['name'],
-                          ]),
-                          style: TextStyle(
-                            color: const Color(0xFF515151),
-                            fontSize: 14.sp,
-                            fontFamily: 'Montserrat',
-                            fontWeight: FontWeight.w500,
-                            height: 1.10,
-                          ),
+              ...cartItems.map(
+                (item) => Padding(
+                  padding: EdgeInsets.only(bottom: 10.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'item_quantity'.tr(
+                          args: [item['quantity'].toString(), item['name']],
                         ),
-                        Text.rich(
-                          TextSpan(children: [
+                        style: TextStyle(
+                          color: const Color(0xFF515151),
+                          fontSize: 14.sp,
+                          fontFamily: 'Montserrat',
+                          fontWeight: FontWeight.w500,
+                          height: 1.10,
+                        ),
+                      ),
+                      Text.rich(
+                        TextSpan(
+                          children: [
                             TextSpan(
                               text: 'currency'.tr(),
                               style: TextStyle(
@@ -153,43 +158,43 @@ class CheckoutOrderSummary extends StatelessWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ]),
+                          ],
                         ),
-                      ],
-                    ),
-                  )),
-
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               Divider(color: const Color(0xFFCACBD4), height: 24.h),
               _buildRow(context, 'subtotal'.tr(), subtotal),
               SizedBox(height: 10.h),
               _buildRow(context, 'delivery_fee'.tr(), deliveryFee),
-              SizedBox(height: 10.h),
-              _buildRow(context, 'service_fee'.tr(), serviceFee),
-
-              // ✅ Show coupon discount if applied
               if (couponDiscount > 0) ...[
                 SizedBox(height: 10.h),
-                _buildRow(context, 'coupon_discount'.tr(), couponDiscount,
-                    isDiscount: true),
+                _buildRow(
+                  context,
+                  'coupon_discount'.tr(),
+                  couponDiscount,
+                  isDiscount: true,
+                ),
               ],
-
-              // ✅ Show points discount if applied
               if (pointsDiscount > 0) ...[
                 SizedBox(height: 10.h),
-                _buildRow(context, 'points_discount'.tr(), pointsDiscount,
-                    isDiscount: true),
+                _buildRow(
+                  context,
+                  'points_discount'.tr(),
+                  pointsDiscount,
+                  isDiscount: true,
+                ),
               ],
-
               Divider(color: const Color(0xFFCACBD4), height: 24.h),
               _buildRow(context, 'total'.tr(), total, isBold: true),
               SizedBox(height: 16.h),
-
-              // ✅ Reward points banner from API
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F0EA),
+                  color: const Color(0xFFE5E8D3),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Row(

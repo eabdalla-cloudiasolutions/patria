@@ -1,6 +1,7 @@
-import 'package:erb/features/previous_orders/data/models/order_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/features/previous_orders/data/models/order_model.dart';
 
 class AddressPaymentCard extends StatelessWidget {
   final OrderModel order;
@@ -17,22 +18,30 @@ class AddressPaymentCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _infoRow(Icons.location_on_outlined, 'Delivery Address',
-              order.deliveryAddress),
+          _infoRow(
+            'assets/images/map-marker-alt.png',
+            'delivery_address'.tr(),
+            order.deliveryAddress,
+          ),
           SizedBox(height: 16.h),
           Divider(color: const Color(0xFFCACBD4), height: 1),
           SizedBox(height: 16.h),
-          _infoRow(Icons.credit_card, 'Payment Method', order.paymentMethod),
+          _infoRow(
+            'assets/images/Wallet.png',
+            'payment_method'.tr(),
+            order.paymentMethod,
+          ),
         ],
       ),
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(String image, String label, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF333333)),
+        Image.asset(image, width: 20, height: 20),
+        // Icon(icon, size: 20, color: const Color(0xFF333333)),
         SizedBox(width: 8.w),
         Expanded(
           child: Column(

@@ -1,6 +1,8 @@
-import 'package:erb/features/previous_orders/data/models/order_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/widgets/safe_network_image.dart';
+import 'package:patria/features/previous_orders/data/models/order_model.dart';
 
 class ItemsOrderedSection extends StatelessWidget {
   final List<OrderItemModel> items;
@@ -13,7 +15,7 @@ class ItemsOrderedSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'ITEMS ORDERED',
+          'items_ordered'.tr(),
           style: TextStyle(
             color: const Color(0xFF595959),
             fontSize: 11.sp,
@@ -36,6 +38,12 @@ class ItemsOrderedSection extends StatelessWidget {
   }
 
   Widget _buildItemRow(OrderItemModel item) {
+    final customizations = item.selectedVariants
+        .map((v) => v.displayString)
+        .join(', ');
+    final hasCustomizations = customizations.isNotEmpty;
+    final hasNotes = item.notes != null && item.notes!.isNotEmpty;
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
@@ -44,20 +52,15 @@ class ItemsOrderedSection extends StatelessWidget {
         ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(4.r),
-            child: Image.network(
-              item.imageUrl,
+            child: SafeNetworkImage(
+              imageUrl: item.imageUrl,
               width: 70.w,
               height: 70.h,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                width: 70.w,
-                height: 70.h,
-                color: Colors.grey.shade200,
-                child: const Icon(Icons.image_not_supported),
-              ),
             ),
           ),
           SizedBox(width: 12.w),
@@ -75,6 +78,32 @@ class ItemsOrderedSection extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 4.h),
+                if (hasCustomizations)
+                  Text(
+                    customizations,
+                    style: TextStyle(
+                      color: const Color(0xFF8B8B8B),
+                      fontSize: 11.sp,
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w400,
+                      height: 1.40,
+                      letterSpacing: 0.22,
+                    ),
+                  ),
+                if (hasNotes)
+                  Padding(
+                    padding: EdgeInsets.only(top: 4.h),
+                    child: Text(
+                      '${item.notes}',
+                      style: TextStyle(
+                        color: const Color(0xFF3C4119),
+                        fontSize: 11.sp,
+                        fontFamily: 'Montserrat',
+                        fontWeight: FontWeight.w400,
+                        height: 1.40,
+                      ),
+                    ),
+                  ),
                 Text(
                   'Qty: ${item.quantity}',
                   style: TextStyle(

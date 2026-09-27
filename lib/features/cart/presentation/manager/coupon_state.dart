@@ -1,6 +1,6 @@
 // lib/features/cart/presentation/bloc/coupon_state.dart
 import 'package:equatable/equatable.dart';
-import 'package:erb/features/cart/data/models/coupon_model.dart';
+import 'package:patria/features/cart/data/models/coupon_model.dart';
 
 abstract class CouponState extends Equatable {
   const CouponState();

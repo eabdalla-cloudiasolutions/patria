@@ -77,56 +77,50 @@ class _ProductSizeSelectorState extends State<ProductSizeSelector> {
           ),
         ),
         SizedBox(height: 12.h),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: widget.options.map((option) {
-              final isSelected = _selectedOption == option;
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedOption = option;
-                    widget.onSizeSelected(option);
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                  constraints: BoxConstraints(minWidth: 80.w),
-                  margin: EdgeInsets.only(right: 12.w),
-                  decoration: BoxDecoration(
+        Wrap(
+          spacing: 12.w,
+          runSpacing: 12.h,
+          children: widget.options.map((option) {
+            final isSelected = _selectedOption == option;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedOption = option;
+                  widget.onSizeSelected(option);
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                constraints: BoxConstraints(minWidth: 80.w),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFFE5E8D3)
+                      : const Color(0xFFFAFAF7),
+                  borderRadius: BorderRadius.zero,
+                  border: Border.all(
+                    width: isSelected ? 2.w : 1.w,
                     color: isSelected
-                        ? const Color(0xFFF5F0EA)
-                        : const Color(0xFFFAFAF7),
-                    borderRadius: BorderRadius.zero,
-                    border: Border.all(
-                      width: isSelected ? 2.w : 1.w,
-                      color: isSelected
-                          ? const Color(0xFF6B5E4B)
-                          : const Color(0xFFE5E5E5),
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      option,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: isSelected
-                            ? const Color(0xFF6B5E4B)
-                            : const Color(0xFF595959),
-                        fontSize: 14.sp,
-                        fontFamily: 'Montserrat',
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w500,
-                      ),
-                    ),
+                        ? const Color(0xFF3C4119)
+                        : const Color(0xFFE5E5E5),
                   ),
                 ),
-              );
-            }).toList(),
-          ),
+                // ✅ Removed Center — items now shrink to content width
+                child: Text(
+                  option,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isSelected
+                        ? const Color(0xFF3C4119)
+                        : const Color(0xFF595959),
+                    fontSize: 14.sp,
+                    fontFamily: 'Montserrat',
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
         ),
         SizedBox(height: 24.h),
       ],

@@ -1,6 +1,6 @@
 // lib/features/product/presentation/manager/product_state.dart of 'product_cubit.dart';
 
-import 'package:erb/features/home/data/models/product_model.dart';
+import 'package:patria/features/home/data/models/product_model.dart';
 
 abstract class ProductState {}
 

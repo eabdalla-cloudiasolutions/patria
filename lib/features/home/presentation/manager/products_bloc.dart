@@ -1,7 +1,7 @@
-import 'package:erb/features/home/data/repos/products_repo.dart';
-import 'package:erb/features/home/presentation/manager/products_event.dart';
-import 'package:erb/features/home/presentation/manager/products_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/features/home/data/repos/products_repo.dart';
+import 'package:patria/features/home/presentation/manager/products_event.dart';
+import 'package:patria/features/home/presentation/manager/products_state.dart';
 
 class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   final ProductsRepo _productsRepo;
@@ -16,12 +16,15 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   ) async {
     emit(ProductsLoading());
     try {
-      final products =
-          await _productsRepo.getProducts(category: event.category);
-      emit(ProductsLoaded(
-        products: products,
-        selectedCategory: event.category ?? 'All',
-      ));
+      final products = await _productsRepo.getProducts(
+        category: event.category,
+      );
+      emit(
+        ProductsLoaded(
+          products: products,
+          selectedCategory: event.category ?? 'All',
+        ),
+      );
     } catch (e) {
       // The repo already throws a formatted String (from ApiErrorHandler)
       // So we can use it directly

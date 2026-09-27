@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LauncherUtils {
-  static const String _supportWhatsApp = 'https://wa.me/201055651338';
-  static const String _supportPhone = 'tel:+201055651338'; // 👈 add your number
+  static const String _supportWhatsApp = 'https://wa.me/201159102221';
+  static const String _supportPhone = 'tel:+201159102221'; // 👈 add your number
 
   static Future<void> openWhatsAppSupport() async {
     final Uri whatsappUri = Uri.parse(_supportWhatsApp);
-    final Uri fallbackUri =
-        Uri.parse('https://web.whatsapp.com/send?phone=201055651338');
+    final Uri fallbackUri = Uri.parse(
+      'https://web.whatsapp.com/send?phone=201159102221',
+    );
 
     try {
       await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);

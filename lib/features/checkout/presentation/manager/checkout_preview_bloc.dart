@@ -1,5 +1,5 @@
-import 'package:erb/features/checkout/data/apis/checkout_preview_api.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:patria/features/checkout/data/apis/checkout_preview_api.dart';
 
 import 'checkout_preview_event.dart';
 import 'checkout_preview_state.dart';
@@ -21,7 +21,6 @@ class CheckoutPreviewBloc
       final data = await _api.getCheckoutPreview(
         subtotal: event.subtotal,
         deliveryFee: event.deliveryFee,
-        serviceFee: event.serviceFee,
         couponDiscount: event.couponDiscount,
         pointsToRedeem: event.pointsToRedeem,
       );

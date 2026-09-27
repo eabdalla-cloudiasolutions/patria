@@ -12,7 +12,9 @@ class OrderModel {
   final String paymentMethod;
   final List<OrderItemModel> items;
   final bool isReviewed;
-  final int? rating; // null if not reviewed
+  final int? rating;
+  final String? specialRequests; // 👈 order‑level special request
+  final String? orderNotes; // 👈 root-level notes
 
   OrderModel({
     required this.id,
@@ -29,6 +31,8 @@ class OrderModel {
     required this.items,
     required this.isReviewed,
     required this.rating,
+    this.specialRequests,
+    this.orderNotes,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -53,7 +57,9 @@ class OrderModel {
               .toList() ??
           [],
       isReviewed: json['isReviewed'] ?? false,
-      rating: json['rating'] as int?, // may be null
+      rating: json['rating'] as int?,
+      specialRequests: json['specialRequests']?.toString(), // 👈 root level
+      orderNotes: json['notes']?.toString(), // 👈 root-level notes
     );
   }
 }
@@ -64,6 +70,8 @@ class OrderItemModel {
   final String imageUrl;
   final int quantity;
   final double price;
+  final List<SelectedVariant> selectedVariants;
+  final String? notes; // 👈 per‑item special request
 
   OrderItemModel({
     required this.productId,
@@ -71,6 +79,8 @@ class OrderItemModel {
     required this.imageUrl,
     required this.quantity,
     required this.price,
+    this.selectedVariants = const [],
+    this.notes,
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
@@ -81,6 +91,33 @@ class OrderItemModel {
       imageUrl: product?['image'] ?? '',
       quantity: json['quantity'] ?? 1,
       price: (json['price'] ?? 0).toDouble(),
+      selectedVariants: (json['selectedVariants'] as List?)
+              ?.map((v) => SelectedVariant.fromJson(v))
+              .toList() ??
+          [],
+      notes: json['notes']?.toString(), // 👈 parse notes
     );
   }
+}
+
+class SelectedVariant {
+  final String group;
+  final String option;
+  final double priceAdjustment;
+
+  SelectedVariant({
+    required this.group,
+    required this.option,
+    required this.priceAdjustment,
+  });
+
+  factory SelectedVariant.fromJson(Map<String, dynamic> json) {
+    return SelectedVariant(
+      group: json['group'] ?? '',
+      option: json['option'] ?? '',
+      priceAdjustment: (json['priceAdjustment'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  String get displayString => option; // or "$group: $option"
 }

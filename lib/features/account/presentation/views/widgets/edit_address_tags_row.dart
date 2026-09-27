@@ -48,7 +48,7 @@ class EditAddressTagsRow extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 14.h),
                 decoration: ShapeDecoration(
                   color: isSelected
-                      ? const Color(0xFF6B5E4B)
+                      ? const Color(0xFF3C4119)
                       : const Color(0xFFE5E5E5),
                   shape: RoundedRectangleBorder(
                     side: BorderSide(
@@ -78,8 +78,9 @@ class EditAddressTagsRow extends StatelessWidget {
                         color: isSelected ? Colors.white : Colors.black,
                         fontSize: 14.sp,
                         fontFamily: 'Montserrat',
-                        fontWeight:
-                            isSelected ? FontWeight.w500 : FontWeight.w400,
+                        fontWeight: isSelected
+                            ? FontWeight.w500
+                            : FontWeight.w400,
                         letterSpacing: 0.28,
                       ),
                     ),

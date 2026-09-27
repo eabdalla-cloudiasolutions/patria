@@ -22,9 +22,9 @@ class AppPrimaryButton extends StatelessWidget {
       child: Container(
         height: height,
         decoration: ShapeDecoration(
-          color: isOutlined ? Colors.transparent : const Color(0xFF6B5E4B),
+          color: isOutlined ? Colors.transparent : const Color(0xFF3C4119),
           shape: RoundedRectangleBorder(
-            side: BorderSide(width: 1.w, color: Color(0xFF6B5E4B)),
+            side: BorderSide(width: 1.w, color: Color(0xFF3C4119)),
             borderRadius: BorderRadius.circular(5.r),
           ),
         ),
@@ -32,7 +32,7 @@ class AppPrimaryButton extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              color: isOutlined ? const Color(0xFF6B5E4B) : Colors.white,
+              color: isOutlined ? const Color(0xFF3C4119) : Colors.white,
               fontSize: 16.sp,
               fontFamily: 'Montserrat',
               fontWeight: FontWeight.w600,

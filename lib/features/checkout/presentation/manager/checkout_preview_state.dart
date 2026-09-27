@@ -1,4 +1,4 @@
-import 'package:erb/features/checkout/data/models/checkout_preview_model.dart';
+import 'package:patria/features/checkout/data/models/checkout_preview_model.dart';
 
 abstract class CheckoutPreviewState {}
 

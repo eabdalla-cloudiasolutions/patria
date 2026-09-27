@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:erb/core/routing/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/routing/routes.dart';
 
 import 'widgets/order_cart_item.dart';
 import 'widgets/order_confirmation_card.dart';
@@ -13,12 +13,13 @@ class OrderSummaryScreen extends StatelessWidget {
   final List<Map<String, dynamic>> cartItems;
   final double subtotal;
   final double deliveryFee;
-  final double serviceFee;
+  final double discount;
   final String deliveryAddress;
   final String paymentMethod;
   final String orderNumber;
   final String orderId;
-  final String status; // 👈 added
+  final String status;
+  final String? note;
   final int pointsEarned;
 
   const OrderSummaryScreen({
@@ -26,13 +27,14 @@ class OrderSummaryScreen extends StatelessWidget {
     required this.cartItems,
     required this.subtotal,
     required this.deliveryFee,
-    required this.serviceFee,
+    this.discount = 0,
     required this.deliveryAddress,
     required this.paymentMethod,
     required this.orderNumber,
     required this.orderId,
-    this.status = 'Pending', // 👈 default to Pending
+    this.status = 'Pending',
     required this.pointsEarned,
+    this.note,
   });
 
   bool get _isActiveOrder {
@@ -44,6 +46,13 @@ class OrderSummaryScreen extends StatelessWidget {
         s == 'out for delivery';
   }
 
+  void _goToHome(BuildContext context) {
+    Navigator.of(
+      context,
+      rootNavigator: true,
+    ).pushNamedAndRemoveUntil(Routes.baseLayer, (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final locale = context.locale.toString();
@@ -51,60 +60,72 @@ class OrderSummaryScreen extends StatelessWidget {
     final formatter = DateFormat("MMMM d, yyyy 'at' hh:mm a", locale);
     final formattedDateTime = formatter.format(now);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        _goToHome(context);
+        return false;
+      },
+      child: Scaffold(
         backgroundColor: const Color(0xFFF7F7F7),
-        elevation: 0,
-        leading: const BackButton(color: Colors.black),
-        title: Text(
-          'order_summary'.tr(),
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18.sp,
-            fontFamily: 'Montserrat',
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.36,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFF7F7F7),
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          leading: GestureDetector(
+            onTap: () => _goToHome(context),
+            child: const Icon(Icons.arrow_back, color: Colors.black),
           ),
+          title: Text(
+            'order_summary'.tr(),
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 18.sp,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.36,
+            ),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 24.h),
-            OrderConfirmationCard(orderNumber: orderNumber),
-            SizedBox(height: 16.h),
-            _buildOrderDetailsSection(context, formattedDateTime),
-            SizedBox(height: 16.h),
-            OrderPriceSummaryCard(
-              subtotal: subtotal,
-              deliveryFee: deliveryFee,
-              serviceFee: serviceFee,
-            ),
-            SizedBox(height: 16.h),
-            OrderPointsEarnedCard(pointsEarned: pointsEarned),
-            SizedBox(height: 16.h),
-            OrderDeliveryInfoCard(
-              deliveryAddress: deliveryAddress,
-              paymentMethod: paymentMethod,
-            ),
-            SizedBox(height: 24.h),
-
-            // 👇 Show Track Order only for active orders
-            if (_isActiveOrder) _buildTrackOrderButton(context),
-
-            SizedBox(height: 32.h),
-          ],
+        body: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 24.h),
+              OrderConfirmationCard(orderNumber: orderNumber),
+              SizedBox(height: 16.h),
+              _buildOrderDetailsSection(context, formattedDateTime),
+              SizedBox(height: 16.h),
+              OrderPriceSummaryCard(
+                subtotal: subtotal,
+                deliveryFee: deliveryFee,
+                discount: discount,
+              ),
+              SizedBox(height: 16.h),
+              if (note != null && note!.trim().isNotEmpty)
+                _buildOrderNotesSection(note!),
+              SizedBox(height: 16.h),
+              OrderPointsEarnedCard(pointsEarned: pointsEarned),
+              SizedBox(height: 16.h),
+              OrderDeliveryInfoCard(
+                deliveryAddress: deliveryAddress,
+                paymentMethod: paymentMethod,
+              ),
+              SizedBox(height: 24.h),
+              if (_isActiveOrder) _buildTrackOrderButton(context),
+              SizedBox(height: 32.h),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildOrderDetailsSection(
-      BuildContext context, String formattedDateTime) {
+    BuildContext context,
+    String formattedDateTime,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -137,8 +158,7 @@ class OrderSummaryScreen extends StatelessWidget {
           ),
           child: ListView.separated(
             shrinkWrap: true,
-            padding: EdgeInsets.zero, // 👈 add this
-
+            padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: cartItems.length,
             separatorBuilder: (_, __) =>
@@ -160,18 +180,21 @@ class OrderSummaryScreen extends StatelessWidget {
           arguments: {
             'orderNumber': orderNumber,
             'orderId': orderId,
-            'estimatedArrival': '02:45 PM - 1:10 PM',
+            'estimatedArrival': '30 min - 60 min',
             'currentStep': 0,
           },
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF6B5E4B),
+          backgroundColor: const Color(0xFF3C4119),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.r),
           ),
         ),
-        icon: const Icon(Icons.location_on_outlined,
-            color: Colors.white, size: 18),
+        icon: const Icon(
+          Icons.location_on_outlined,
+          color: Colors.white,
+          size: 18,
+        ),
         label: Text(
           'track_order'.tr(),
           style: TextStyle(
@@ -181,6 +204,48 @@ class OrderSummaryScreen extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildOrderNotesSection(String notes) {
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15.r),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset('assets/images/order_note.png', height: 20, width: 20),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'order_notes'.tr(),
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  notes,
+                  style: TextStyle(
+                    color: const Color(0xFF23252A),
+                    fontSize: 14.sp,
+                    fontFamily: 'Montserrat',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

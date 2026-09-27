@@ -27,19 +27,19 @@
 //               child: Container(
 //                 padding: EdgeInsets.symmetric(vertical: 8.h),
 //                 decoration: BoxDecoration(
-//                   color: const Color(0xFFF5F0EA),
+//                   color: const Color(0xFFE5E8D3),
 //                   borderRadius: BorderRadius.circular(5.r),
 //                 ),
 //                 child: Row(
 //                   mainAxisAlignment: MainAxisAlignment.center,
 //                   children: [
 //                     const Icon(Icons.star_outline,
-//                         size: 16, color: Color(0xFF6B5E4B)),
+//                         size: 16, color: Color(0xFF3C4119)),
 //                     SizedBox(width: 6.w),
 //                     Text(
 //                       'set_as_default'.tr(),
 //                       style: TextStyle(
-//                         color: Color(0xFF6B5E4B),
+//                         color: Color(0xFF3C4119),
 //                         fontSize: 12.sp,
 //                         fontFamily: 'Montserrat',
 //                         fontWeight: FontWeight.w600,
@@ -60,14 +60,14 @@
 //         //     padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
 //         //     decoration: ShapeDecoration(
 //         //       shape: RoundedRectangleBorder(
-//         //         side: const BorderSide(color: Color(0xFF6B5E4B)),
+//         //         side: const BorderSide(color: Color(0xFF3C4119)),
 //         //         borderRadius: BorderRadius.circular(5.r),
 //         //       ),
 //         //     ),
 //         //     child: Text(
 //         //       'edit'.tr(),
 //         //       style: TextStyle(
-//         //         color: Color(0xFF6B5E4B),
+//         //         color: Color(0xFF3C4119),
 //         //         fontSize: 12.sp,
 //         //         fontFamily: 'Montserrat',
 //         //         fontWeight: FontWeight.w600,

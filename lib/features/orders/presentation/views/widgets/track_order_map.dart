@@ -31,7 +31,7 @@ class TrackOrderMap extends StatelessWidget {
                       point: LatLng(30.0444, 31.2357),
                       child: Icon(
                         Icons.location_pin,
-                        color: Color(0xFF6B5E4B),
+                        color: Color(0xFF3C4119),
                         size: 36,
                       ),
                     ),
@@ -59,7 +59,7 @@ class TrackOrderMap extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.my_location, size: 11, color: Color(0xFF6B5E4B)),
+                    Icon(Icons.my_location, size: 11, color: Color(0xFF3C4119)),
                     SizedBox(width: 4.w),
                     Text(
                       'your_location'.tr(),
@@ -80,7 +80,7 @@ class TrackOrderMap extends StatelessWidget {
               top: 80.h,
               child: Icon(
                 Icons.delivery_dining,
-                color: Color(0xFF6B5E4B),
+                color: Color(0xFF3C4119),
                 size: 32,
               ),
             ),
