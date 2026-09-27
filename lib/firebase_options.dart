@@ -57,20 +57,20 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC5KDfR3nFWyE3TRMfI278_c9Lg8IBjfeI',
-    appId: '1:772774284221:android:f7341644868110324220d4',
-    messagingSenderId: '772774284221',
-    projectId: 'patria-dce7d',
-    storageBucket: 'patria-dce7d.firebasestorage.app',
+    apiKey: 'AIzaSyAqTlXL_8kRtxE3hQndfAwnmte2Sma12Fw',
+    appId: '1:789058511912:android:a460a6107ac32d60c3011d',
+    messagingSenderId: '789058511912',
+    projectId: 'patria-app-71f36',
+    storageBucket: 'patria-app-71f36.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCW3nnV0zFI4SNojhgOstxpkC2CB1Ogsac',
-    appId: '1:772774284221:ios:3408c33bf119cba94220d4',
-    messagingSenderId: '772774284221',
-    projectId: 'patria-dce7d',
-    storageBucket: 'patria-dce7d.firebasestorage.app',
-    androidClientId: '772774284221-bcqssiof86bhp1iakcukkghc5vd46ntr.apps.googleusercontent.com',
-    iosClientId: '772774284221-s3bnl8ant2cc8fvtneeqpaqf4vnjhggf.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCN5abs9DKEKYMwJzK59wDGfUw91KZeVLE',
+    appId: '1:789058511912:ios:e0b3744abc34ff33c3011d',
+    messagingSenderId: '789058511912',
+    projectId: 'patria-app-71f36',
+    storageBucket: 'patria-app-71f36.firebasestorage.app',
+    androidClientId: '789058511912-sm9p3q8morh5672qthbnbd54el13gcud.apps.googleusercontent.com',
+    iosClientId: '789058511912-s8ait6j5rlpsgrtlan4m5auaos1v4kao.apps.googleusercontent.com',
     iosBundleId: 'com.cloudiasolutions.patria',
   );
 }

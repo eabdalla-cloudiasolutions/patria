@@ -15,8 +15,10 @@ class AddressSelectionSheet extends StatefulWidget {
     String fullAddress,
     String addressId,
     String deliveryZoneId,
-    String zoneName,
-  )
+    String zoneName, {
+    double? lat,
+    double? lng,
+  })
   onAddressSelected;
 
   const AddressSelectionSheet({
@@ -91,6 +93,8 @@ class _AddressSelectionSheetState extends State<AddressSelectionSheet> {
       addr.id,
       deliveryZoneId,
       zoneName,
+      lat: addr.lat,
+      lng: addr.lng,
     );
     if (mounted) Navigator.pop(context);
   }

@@ -149,6 +149,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(width: 1.w, color: Colors.red),
             ),
+            // Some validation messages (e.g. the phone format one) are long,
+            // so let them wrap instead of being cut off after one line.
+            errorMaxLines: 3,
             filled: true,
             fillColor: Colors.white,
           ),

@@ -59,7 +59,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         }
       }
       // For other errors (network, 4xx, 5xx, etc.)
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(LoginFailure(errorMessage));
     }
   }

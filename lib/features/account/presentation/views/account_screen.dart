@@ -50,12 +50,11 @@ class _AccountScreenState extends State<AccountScreen> {
 
   Future<void> _loadUserName() async {
     final token = await _userService.getUserToken();
-    final email = await _userService.getUserEmail();
     final userName = await _userService.getUserName();
 
     if (mounted) {
       setState(() {
-        _isLoggedIn = token.isNotEmpty && email.isNotEmpty; // ✅ check login
+        _isLoggedIn = token.isNotEmpty;
         _userName = userName;
       });
     }

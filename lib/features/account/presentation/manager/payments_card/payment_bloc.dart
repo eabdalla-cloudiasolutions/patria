@@ -22,7 +22,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       final methods = await _api.getPaymentMethods();
       emit(PaymentLoaded(methods));
     } catch (e) {
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(PaymentError(errorMessage));
     }
   }

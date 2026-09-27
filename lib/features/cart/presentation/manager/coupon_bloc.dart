@@ -29,7 +29,7 @@ class CouponBloc extends Bloc<CouponEvent, CouponState> {
       }
     } catch (e) {
       // DioException or other errors
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(CouponError(errorMessage));
     }
   }

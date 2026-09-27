@@ -75,8 +75,15 @@ class ApiEndpoints {
 
   static String trackOrder(String id) => '/orders/$id/tracking';
 
-  static String zoneLookup(String name) =>
-      '/zones/lookup?name=${Uri.encodeComponent(name)}';
+  // lat/lng are optional and help the backend match the zone by location.
+  // The name is still encoded with encodeComponent (spaces as %20), exactly
+  // as before, so requests without coordinates are unchanged.
+  static String zoneLookup(String name, {double? lat, double? lng}) {
+    final query = StringBuffer('/zones/lookup?name=${Uri.encodeComponent(name)}');
+    if (lat != null) query.write('&lat=$lat');
+    if (lng != null) query.write('&lng=$lng');
+    return query.toString();
+  }
 
   static const String logSearchQuery = '/customer-search/log';
   static const String searchHistory = '/customer-search/history';

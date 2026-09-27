@@ -105,8 +105,7 @@ class _PreviousOrdersScreenState extends State<PreviousOrdersScreen>
 
   Future<void> _checkLoginStatus() async {
     final token = await _userService.getUserToken();
-    final userEmail = await _userService.getUserEmail();
-    final loggedIn = token.isNotEmpty && userEmail.isNotEmpty;
+    final loggedIn = token.isNotEmpty;
     if (mounted) {
       setState(() {
         _isLoggedIn = loggedIn;

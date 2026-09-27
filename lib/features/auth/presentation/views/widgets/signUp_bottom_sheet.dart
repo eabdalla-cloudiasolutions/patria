@@ -152,7 +152,7 @@ class _SignUpBottomSheetState extends State<SignUpBottomSheet> {
                       // Phone
                       CustomTextField(
                         controller: _phoneController,
-                        label: 'phone_number'.tr(),
+                        label: 'phone_number_whatsapp'.tr(),
                         hint: 'phone_hint'.tr(),
                         keyboardType: TextInputType.phone,
                         prefixIcon: Padding(

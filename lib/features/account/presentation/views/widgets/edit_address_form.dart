@@ -161,6 +161,9 @@ class _StyledFormFieldState extends State<_StyledFormField> {
               vertical: 12.h,
             ),
             errorText: widget.errorText,
+            // The phone error lists both accepted formats, so let it wrap
+            // instead of being cut off with an ellipsis after one line.
+            errorMaxLines: 3,
             isDense: true,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),

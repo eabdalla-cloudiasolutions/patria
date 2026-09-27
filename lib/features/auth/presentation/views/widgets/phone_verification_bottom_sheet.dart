@@ -75,7 +75,7 @@ class _PhoneVerificationBottomSheetState
               _StyledPhoneField(
                 controller: _phoneController,
                 label: 'phone_number'.tr(),
-                hint: '+20 1XX XXX XXXX',
+                hint: '00000000000',
                 errorText: _phoneError,
               ),
               SizedBox(height: 32.h),
@@ -215,6 +215,8 @@ class _StyledPhoneFieldState extends State<_StyledPhoneField> {
               vertical: 12.h,
             ),
             errorText: widget.errorText,
+            // The phone error lists both accepted formats, so let it wrap.
+            errorMaxLines: 3,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(

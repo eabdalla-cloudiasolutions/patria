@@ -25,9 +25,13 @@ class ZoneLookupResult {
 }
 
 class ZoneLookupApi {
-  Future<ZoneLookupResult> lookupZone(String zoneName) async {
+  Future<ZoneLookupResult> lookupZone(
+    String zoneName, {
+    double? lat,
+    double? lng,
+  }) async {
     final response = await ApiClient.instance.get(
-      ApiEndpoints.zoneLookup(zoneName),
+      ApiEndpoints.zoneLookup(zoneName, lat: lat, lng: lng),
     );
     return ZoneLookupResult.fromJson(response.data);
   }

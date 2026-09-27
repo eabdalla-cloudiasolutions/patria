@@ -32,7 +32,7 @@
 				<key>CFBundleURLSchemes</key>
 				<array>
 					<!-- ✅ Patria iOS Google client ID -->
-					<string>com.googleusercontent.apps.772774284221-s3bnl8ant2cc8fvtneeqpaqf4vnjhggf</string>
+					<string>com.googleusercontent.apps.789058511912-s8ait6j5rlpsgrtlan4m5auaos1v4kao</string>
 				</array>
 			</dict>
 			<dict>
@@ -100,9 +100,14 @@
 		<key>UISupportedInterfaceOrientations~ipad</key>
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
-			<string>UIInterfaceOrientationPortraitUpsideDown</string>
-			<string>UIInterfaceOrientationLandscapeLeft</string>
-			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<!-- Required to lock iPad to portrait only: Apple mandates all 4
+		     orientations for any iPad app that supports multitasking
+		     (Split View / Slide Over / Stage Manager). Setting this to
+		     true opts the app out of multitasking entirely, which is
+		     what allows a restricted orientation list to pass App Store
+		     validation. -->
+		<key>UIRequiresFullScreen</key>
+		<true/>
 	</dict>
 </plist>

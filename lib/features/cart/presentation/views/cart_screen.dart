@@ -102,8 +102,7 @@ class _CartScreenState extends State<CartScreen> with RouteAware {
 
   Future<bool> _isUserLoggedIn() async {
     final token = await _userService.getUserToken();
-    final email = await _userService.getUserEmail();
-    return token.isNotEmpty && email.isNotEmpty;
+    return token.isNotEmpty;
   }
 
   double _subtotal(List<CartItem> items) =>

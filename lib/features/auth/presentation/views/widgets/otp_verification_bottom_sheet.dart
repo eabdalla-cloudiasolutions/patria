@@ -11,7 +11,7 @@ class OtpVerificationBottomSheet extends StatefulWidget {
   final String phoneNumber;
   const OtpVerificationBottomSheet({
     super.key,
-    this.phoneNumber = '+20 xxx xxx xxxx',
+    this.phoneNumber = '00000000000',
   });
 
   @override

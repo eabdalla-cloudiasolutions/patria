@@ -10,6 +10,8 @@ class AddressModel {
   final String zone; // 👈 was 'area' → now 'zone' (delivery zone name)
   final String? phone;
   final bool isDefault;
+  final double? lat;
+  final double? lng;
 
   AddressModel({
     required this.id,
@@ -23,6 +25,8 @@ class AddressModel {
     required this.zone,
     this.phone,
     required this.isDefault,
+    this.lat,
+    this.lng,
   });
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,8 @@ class AddressModel {
       zone: json['zone'] ?? json['area'] ?? '', // fallback to 'area'
       phone: json['phone']?.toString(),
       isDefault: json['isDefault'] ?? false,
+      lat: (json['lat'] as num?)?.toDouble(),
+      lng: (json['lng'] as num?)?.toDouble(),
     );
   }
 
@@ -53,5 +59,7 @@ class AddressModel {
         'zone': zone,
         if (phone != null) 'phone': phone,
         'isDefault': isDefault,
+        if (lat != null) 'lat': lat,
+        if (lng != null) 'lng': lng,
       };
 }

@@ -22,6 +22,7 @@ class PersonalInformationScreen extends StatefulWidget {
 
 class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   final UserService _userService = UserService();
+  final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -57,11 +58,11 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     setState(() => _isLoading = true);
 
     final token = await _userService.getUserToken();
-    final userEmail = await _userService.getUserEmail();
-    final loggedIn = token.isNotEmpty && userEmail.isNotEmpty;
+    final loggedIn = token.isNotEmpty;
 
     if (loggedIn) {
       final userName = await _userService.getUserName();
+      final userEmail = await _userService.getUserEmail();
       final userPhone = await _userService.getUserPhone();
 
       _nameController.text = userName;
@@ -70,6 +71,14 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
       try {
         final profile = await AuthApi().getUserProfile();
+
+        // ✅ Sync phone from the live profile — the local cache can be
+        // stale or empty (e.g. Google sign-in never saved one locally)
+        // even though the backend already has it.
+        final profilePhone = profile['phone']?.toString();
+        if (profilePhone != null && profilePhone.isNotEmpty) {
+          _phoneController.text = profilePhone;
+        }
 
         // Load date of birth
         final dobStr = profile['dateOfBirth'] as String?;
@@ -100,17 +109,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   Future<void> _saveUserData() async {
     if (!_isLoggedIn) return;
 
-    final phoneError = Validators.phone(_phoneController.text);
-    if (phoneError != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(phoneError, style: TextStyle(fontWeight: FontWeight.w600)),
-          backgroundColor: const Color(0xFFC90000),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
+    if (!(_formKey.currentState?.validate() ?? true)) return;
 
     setState(() => _isLoading = true);
 
@@ -277,32 +276,35 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 24.h),
-          _buildFields(),
-          SizedBox(height: 35.h),
-          _buildCheckboxes(),
-          SizedBox(height: 32.h),
-          _buildSaveButton(),
-          SizedBox(height: 20.h),
-          DeleteButton(
-            text: 'delete_account'.tr(),
-            onPressed: () {
-              ConfirmationBottomSheet.show(
-                context: context,
-                title: 'delete_account_title'.tr(),
-                subtitle: 'delete_account_subtitle'.tr(),
-                confirmText: 'delete_account_confirm'.tr(),
-                cancelText: 'cancel'.tr(),
-                onConfirm: _deleteAccount,
-                isDangerous: true,
-              );
-            },
-          ),
-          SizedBox(height: 90.h),
-        ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 24.h),
+            _buildFields(),
+            SizedBox(height: 35.h),
+            _buildCheckboxes(),
+            SizedBox(height: 32.h),
+            _buildSaveButton(),
+            SizedBox(height: 20.h),
+            DeleteButton(
+              text: 'delete_account'.tr(),
+              onPressed: () {
+                ConfirmationBottomSheet.show(
+                  context: context,
+                  title: 'delete_account_title'.tr(),
+                  subtitle: 'delete_account_subtitle'.tr(),
+                  confirmText: 'delete_account_confirm'.tr(),
+                  cancelText: 'cancel'.tr(),
+                  onConfirm: _deleteAccount,
+                  isDangerous: true,
+                );
+              },
+            ),
+            SizedBox(height: 90.h),
+          ],
+        ),
       ),
     );
   }
@@ -316,6 +318,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           controller: _nameController,
           hint: '',
           enabled: true,
+          validator: Validators.fullName,
         ),
         SizedBox(height: 14.h),
         _StyledFormField(
@@ -621,6 +624,22 @@ class _StyledFormFieldState extends State<_StyledFormField> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(color: Color(0xFF3C4119)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFFC90000)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(color: Color(0xFFC90000)),
+            ),
+            // The phone error lists both accepted formats, so give it room.
+            errorMaxLines: 3,
+            errorStyle: TextStyle(
+              color: const Color(0xFFC90000),
+              fontSize: 12.sp,
+              fontFamily: 'Montserrat',
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),

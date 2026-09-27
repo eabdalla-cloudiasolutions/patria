@@ -44,10 +44,10 @@ void main() async {
   // ✅ Patria Firebase Google Sign-In client IDs
   await GoogleSignIn.instance.initialize(
     clientId: Platform.isIOS
-        ? '772774284221-s3bnl8ant2cc8fvtneeqpaqf4vnjhggf.apps.googleusercontent.com'
-        : '772774284221-bcqssiof86bhp1iakcukkghc5vd46ntr.apps.googleusercontent.com',
+        ? '789058511912-s8ait6j5rlpsgrtlan4m5auaos1v4kao.apps.googleusercontent.com'
+        : '789058511912-sm9p3q8morh5672qthbnbd54el13gcud.apps.googleusercontent.com',
     serverClientId:
-        '772774284221-818pct3a72k6h9b0evirk6u9p4p7u5fd.apps.googleusercontent.com',
+        '789058511912-rlafs37ljd2qqeracgjvkb78enqpa0s1.apps.googleusercontent.com',
   );
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);

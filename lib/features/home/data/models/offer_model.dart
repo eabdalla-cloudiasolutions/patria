@@ -35,9 +35,15 @@ class OfferModel {
 
     String? discountPercent;
     if (discountValue > 0) {
-      if (discountType == 'Percentage (%)') {
+      // ✅ Match by keyword, case-insensitively, instead of the exact
+      // dashboard label strings ("Percentage (%)" / "Fixed Amount (EGP)").
+      // Patria's API actually returns short lowercase values like
+      // "percentage", which never matched those exact strings — so no
+      // discount badge was ever shown even though the data was there.
+      final normalizedType = discountType.toString().toLowerCase();
+      if (normalizedType.contains('percent')) {
         discountPercent = '-${discountValue.toInt()}%';
-      } else if (discountType == 'Fixed Amount (EGP)') {
+      } else if (normalizedType.contains('fixed')) {
         discountPercent = '-${discountValue.toInt()} EGP';
       }
       // you can add more types if needed

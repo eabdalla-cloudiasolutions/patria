@@ -8,6 +8,7 @@ import 'package:patria/core/services/user_service.dart';
 import 'package:patria/core/utils/emoji_input_formatter.dart';
 import 'package:patria/core/utils/validators.dart';
 import 'package:patria/features/account/data/apis/addresses_api.dart';
+import 'package:patria/features/auth/data/apis/auth_api.dart';
 import 'package:patria/features/account/data/models/address_model.dart';
 import 'package:patria/features/cart/data/models/cart_model.dart';
 import 'package:patria/features/cart/presentation/manager/cart_bloc.dart';
@@ -115,7 +116,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     super.dispose();
   }
 
-  Future<bool> _validateAndSetZone(String zoneName) async {
+  Future<bool> _validateAndSetZone(
+    String zoneName, {
+    double? lat,
+    double? lng,
+  }) async {
     setState(() {
       _isValidatingZone = true;
       _zoneError = null;
@@ -123,7 +128,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     });
 
     try {
-      final result = await ZoneLookupApi().lookupZone(zoneName);
+      final result = await ZoneLookupApi().lookupZone(
+        zoneName,
+        lat: lat,
+        lng: lng,
+      );
       setState(() {
         _zoneId = result.id;
         _deliveryFee = result.deliveryFee;
@@ -164,7 +173,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final userService = UserService();
     final name = await userService.getUserName();
     final email = await userService.getUserEmail();
-    final phone = await userService.getUserPhone();
+    var phone = await userService.getUserPhone();
+
+    // ✅ Sync phone from the live profile — the local cache can be stale
+    // or empty (e.g. an OAuth login that hasn't refreshed it) even though
+    // the backend already has one, which would otherwise wrongly show the
+    // "enter your phone" section and block placing the order.
+    if (phone.isEmpty) {
+      try {
+        final profile = await AuthApi().getUserProfile();
+        final profilePhone = profile['phone']?.toString();
+        if (profilePhone != null && profilePhone.isNotEmpty) {
+          phone = profilePhone;
+        }
+      } catch (_) {
+        // ignore: keep the local (empty) value, fall back to asking for it
+      }
+    }
+
     setState(() {
       _userName = name;
       _userEmail = email;
@@ -187,7 +213,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _isAddressFromSaved = true;
     });
     if (_zoneName.isNotEmpty) {
-      await _validateAndSetZone(_zoneName);
+      await _validateAndSetZone(_zoneName, lat: addr.lat, lng: addr.lng);
     }
   }
 
@@ -281,33 +307,41 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: AddressSelectionSheet(
             selectedAddressId: _selectedAddressId,
             onAddressSelected:
-                (fullAddress, addressId, deliveryZoneId, zoneName) async {
+                (
+                  fullAddress,
+                  addressId,
+                  deliveryZoneId,
+                  zoneName, {
+                  lat,
+                  lng,
+                }) async {
                   setState(() {
                     _address = fullAddress;
                     _selectedAddressId = addressId;
                     _zoneName = zoneName;
                     _isAddressFromSaved = true;
                   });
-                  await _validateAndSetZone(zoneName);
+                  await _validateAndSetZone(zoneName, lat: lat, lng: lng);
                 },
           ),
         ),
       );
     } catch (e) {
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true)
-          .push(MaterialPageRoute(builder: (_) => const NewAddressScreen()))
-          .then((result) {
-            if (!mounted) return;
-            final addressId = result is Map
-                ? result['addressId'] as String?
-                : null;
-            if (addressId != null) {
-              _loadAddressById(addressId);
-            } else {
-              _loadDefaultAddress();
-            }
-          });
+      Navigator.of(
+        context,
+        rootNavigator: true,
+      ).push(MaterialPageRoute(builder: (_) => const NewAddressScreen())).then((
+        result,
+      ) {
+        if (!mounted) return;
+        final addressId = result is Map ? result['addressId'] as String? : null;
+        if (addressId != null) {
+          _loadAddressById(addressId);
+        } else {
+          _loadDefaultAddress();
+        }
+      });
     }
   }
 
@@ -338,7 +372,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (lower.contains('master') || lower.contains('debit')) {
       return 'Mastercard';
     }
-    return 'Card';
+    // return 'Card';
+    return 'Cash on Delivery';
   }
 
   Future<void> _savePhoneIfNeeded() async {
@@ -667,13 +702,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             SnackBar(
                               content: Text(
                                 'loading_order_summary'.tr(),
-                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               backgroundColor: const Color(0xFF3C4119),
                               duration: const Duration(seconds: 2),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
-                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                              margin: EdgeInsets.only(
+                                left: 16.w,
+                                right: 16.w,
+                                bottom: 16.h,
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 8.h,
+                              ),
                             ),
                           );
                           return;
@@ -684,13 +728,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             SnackBar(
                               content: Text(
                                 previewState.message,
-                                style: const TextStyle(fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                               backgroundColor: const Color(0xFFC90000),
                               duration: const Duration(seconds: 3),
                               behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.only(left: 16.w, right: 16.w, bottom: 16.h),
-                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                              margin: EdgeInsets.only(
+                                left: 16.w,
+                                right: 16.w,
+                                bottom: 16.h,
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 8.h,
+                              ),
                             ),
                           );
                           return;
@@ -747,7 +800,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return _StyledPhoneField(
       controller: _phoneController,
       label: 'phone_number'.tr(),
-      hint: '+20 1XX XXX XXXX',
+      hint: '00000000000',
       onChanged: (_) => setState(() {}),
     );
   }

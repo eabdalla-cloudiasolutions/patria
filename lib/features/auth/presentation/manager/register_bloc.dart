@@ -30,7 +30,7 @@ class Registpatrialoc extends Bloc<RegisterEvent, RegisterState> {
       );
       emit(RegisterSuccess());
     } catch (e) {
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(RegisterFailure(errorMessage));
     }
   }

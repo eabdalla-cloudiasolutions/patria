@@ -52,7 +52,10 @@ class OAuthService {
         id: data['_id'] ?? '',
         name: data['name'] ?? '',
         email: data['email'] ?? '',
-        phone: '',
+        // ✅ The backend already knows the phone (e.g. saved on a previous
+        // login) even though Google sign-in itself never provides one —
+        // use it instead of wiping out the local cache with ''.
+        phone: data['phone'] ?? '',
         role: data['role'] ?? '',
         token: data['token'] ?? '',
       );
@@ -64,7 +67,9 @@ class OAuthService {
       print('=== GoogleSignIn DioException: ${e.message}');
       throw ApiErrorHandler.handle(e);
     } on GoogleSignInException catch (e) {
-      print('=== GoogleSignInException code: ${e.code}');
+      print('=== GoogleSignInException code: ${e.code}, description: ${e.description}, details: ${e.details}');
+      // ✅ The user just closed the account picker — not an error, so
+      // silently return instead of surfacing a raw exception string.
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
       rethrow;
     } catch (e, stack) {
@@ -100,6 +105,14 @@ class OAuthService {
           'name': fullName,
           'provider': 'apple',
           'providerId': appleUserId,
+          // ✅ Needed so the backend can exchange it for a refresh_token
+          // with Apple and store it. That refresh_token is the only way
+          // the backend can later call Apple's revoke endpoint on account
+          // deletion — without it, Apple will never resend the real
+          // email/name on a later sign-in with the same Apple ID, even
+          // after the account is deleted on our side. See package docs on
+          // AuthorizationCredentialAppleID.authorizationCode.
+          'authorizationCode': credential.authorizationCode,
         },
       );
 
@@ -113,7 +126,9 @@ class OAuthService {
         id: data['_id'] ?? '',
         name: savedName,
         email: savedEmail,
-        phone: '',
+        // ✅ Apple never provides a phone number either — use whatever the
+        // backend already has on file for this account instead of ''.
+        phone: data['phone'] ?? '',
         role: data['role'] ?? '',
         token: data['token'] ?? '',
       );
@@ -121,6 +136,13 @@ class OAuthService {
       await _registerFcmToken(); // ✅
 
       return data;
+    } on DioException catch (e) {
+      print('=== AppleSignIn DioException: ${e.response?.data}');
+      throw ApiErrorHandler.handle(e);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      print('=== AppleSignIn AuthorizationException code: ${e.code}');
+      if (e.code == AuthorizationErrorCode.canceled) return null;
+      rethrow;
     } catch (e) {
       rethrow;
     }
@@ -155,7 +177,9 @@ class OAuthService {
         id: data['_id'] ?? '',
         name: data['name'] ?? '',
         email: data['email'] ?? '',
-        phone: '',
+        // ✅ Same as Google/Apple — Facebook doesn't hand us a phone number,
+        // but the backend may already have one on file for this account.
+        phone: data['phone'] ?? '',
         role: data['role'] ?? '',
         token: data['token'] ?? '',
       );

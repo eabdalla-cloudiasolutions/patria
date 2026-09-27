@@ -1,28 +1,36 @@
 {
   "project_info": {
-    "project_number": "772774284221",
-    "project_id": "patria-dce7d",
-    "storage_bucket": "patria-dce7d.firebasestorage.app"
+    "project_number": "789058511912",
+    "project_id": "patria-app-71f36",
+    "storage_bucket": "patria-app-71f36.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:772774284221:android:f7341644868110324220d4",
+        "mobilesdk_app_id": "1:789058511912:android:a460a6107ac32d60c3011d",
         "android_client_info": {
           "package_name": "com.cloudiasolutions.patria"
         }
       },
       "oauth_client": [
         {
-          "client_id": "772774284221-3sia4tpa49b2c1p74n9qpqvov5natf0b.apps.googleusercontent.com",
+          "client_id": "789058511912-3f31jj85mesujuaa3u2fam05kfuci8br.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.cloudiasolutions.patria",
-            "certificate_hash": "5320e02736f97a40bf2b68185dfc20b690924fe3"
+            "certificate_hash": "7e50e37a4b9251acd4c9375f0602032c74fdcbfa"
           }
         },
         {
-          "client_id": "772774284221-bcqssiof86bhp1iakcukkghc5vd46ntr.apps.googleusercontent.com",
+          "client_id": "789058511912-401oddk59rube3g3hn6mp7kkfh20fhrl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cloudiasolutions.patria",
+            "certificate_hash": "0e990218e72b580f0079307056b5e7fe4c45a199"
+          }
+        },
+        {
+          "client_id": "789058511912-85ve9ten3q1ducqc0tphf100cevlp85q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.cloudiasolutions.patria",
@@ -30,32 +38,40 @@
           }
         },
         {
-          "client_id": "772774284221-kdc10lscrr839sp61gm6f1c2v8qbqs7i.apps.googleusercontent.com",
+          "client_id": "789058511912-nolmd7gv14ibhksfjohlp4m22maddvdi.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.cloudiasolutions.patria",
-            "certificate_hash": "02bda722cb10b18bed71e2fa965dddb9dc5db4c2"
+            "certificate_hash": "d42d6fa5566d09f94da86a46703ae90ee15286fe"
           }
         },
         {
-          "client_id": "772774284221-818pct3a72k6h9b0evirk6u9p4p7u5fd.apps.googleusercontent.com",
+          "client_id": "789058511912-upic8ol8ifjhgsvmbk6gtmuna67aaoth.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cloudiasolutions.patria",
+            "certificate_hash": "f0535955e321e1106bd9d2348d3ae66671e1e2ee"
+          }
+        },
+        {
+          "client_id": "789058511912-rlafs37ljd2qqeracgjvkb78enqpa0s1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyC5KDfR3nFWyE3TRMfI278_c9Lg8IBjfeI"
+          "current_key": "AIzaSyAqTlXL_8kRtxE3hQndfAwnmte2Sma12Fw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "772774284221-818pct3a72k6h9b0evirk6u9p4p7u5fd.apps.googleusercontent.com",
+              "client_id": "789058511912-rlafs37ljd2qqeracgjvkb78enqpa0s1.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "772774284221-s3bnl8ant2cc8fvtneeqpaqf4vnjhggf.apps.googleusercontent.com",
+              "client_id": "789058511912-s8ait6j5rlpsgrtlan4m5auaos1v4kao.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.cloudiasolutions.patria"

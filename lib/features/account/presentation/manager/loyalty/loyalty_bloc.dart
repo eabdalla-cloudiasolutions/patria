@@ -29,7 +29,7 @@ class LoyaltyBloc extends Bloc<LoyaltyEvent, LoyaltyState> {
       emit(LoyaltyLoaded(loyaltyData: loyaltyData));
     } catch (e) {
       // ✅ Use ApiErrorHandler
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(LoyaltyError(message: errorMessage));
     }
   }
@@ -45,7 +45,7 @@ class LoyaltyBloc extends Bloc<LoyaltyEvent, LoyaltyState> {
       emit(LoyaltyLoaded(loyaltyData: loyaltyData));
     } catch (e) {
       // ✅ Use ApiErrorHandler
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(LoyaltyError(message: errorMessage));
     }
   }

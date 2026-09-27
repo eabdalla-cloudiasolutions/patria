@@ -22,7 +22,7 @@ class AddressesBloc extends Bloc<AddressesEvent, AddressesState> {
       final addresses = await _api.getAddresses();
       emit(AddressesLoaded(addresses));
     } catch (e) {
-      final errorMessage = ApiErrorHandler.handle(e as DioException);
+      final errorMessage = e is DioException ? ApiErrorHandler.handle(e) : e.toString();
       emit(AddressesError(errorMessage));
     }
   }

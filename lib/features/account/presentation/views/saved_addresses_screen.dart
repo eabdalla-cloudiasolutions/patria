@@ -1,7 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:patria/core/network/api_error_handler.dart';
 import 'package:patria/core/routing/routes.dart';
 import 'package:patria/core/services/user_service.dart';
 import 'package:patria/core/widgets/delete_overlay.dart';
@@ -40,8 +42,7 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
 
   Future<void> _checkLoginStatus() async {
     final token = await _userService.getUserToken();
-    final userEmail = await _userService.getUserEmail();
-    final loggedIn = token.isNotEmpty && userEmail.isNotEmpty;
+    final loggedIn = token.isNotEmpty;
 
     if (mounted) {
       setState(() {
@@ -384,9 +385,12 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                   }
                 } catch (e) {
                   if (context.mounted) {
+                    final message = e is DioException
+                        ? ApiErrorHandler.handle(e)
+                        : e.toString();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(e.toString()),
+                        content: Text(message),
                         backgroundColor: const Color(0xFFC90000),
                         duration: const Duration(seconds: 2),
                         behavior: SnackBarBehavior.floating,
@@ -506,9 +510,12 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
                   }
                 } catch (e) {
                   if (context.mounted) {
+                    final message = e is DioException
+                        ? ApiErrorHandler.handle(e)
+                        : e.toString();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(e.toString()),
+                        content: Text(message),
                         backgroundColor: const Color(0xFFC90000),
                         duration: const Duration(seconds: 2),
                         behavior: SnackBarBehavior.floating,
